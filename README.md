@@ -2,7 +2,7 @@
 
 Vue chat widget for the Cheshire Cat, ready to be used on any website.
 
-# How to import
+## How to import
 
 Load the files in the `<head>` tag, like this:
 
