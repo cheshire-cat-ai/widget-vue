@@ -17,8 +17,8 @@ const props = withDefaults(defineProps<{
 	files: () => Object.values(AcceptedContentTypes),
 	timeout: 10000,
 	secure: false,
+	dark: false,
 	primary: '',
-	dark: true
 })
 
 const messagesStore = useMessages(`ws${props.secure ? 's' : ''}://${props.url}/ws`, props.timeout)()
