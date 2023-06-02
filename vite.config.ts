@@ -33,14 +33,14 @@ export default defineConfig({
     tsconfigPaths()
   ],
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
+    outDir: 'example',
+    assetsDir: '',
     cssCodeSplit: false,
     rollupOptions: {
       output: {
         minifyInternalExports: true,
-        entryFileNames: 'assets/widget.js',
-        assetFileNames: (info) => `assets/${info.name?.endsWith('css') ? 'widget' : '[name]'}[extname]`,
+        entryFileNames: 'widget.js',
+        assetFileNames: (info) => `${info.name?.endsWith('css') ? 'widget' : '[name]'}[extname]`,
         chunkFileNames: 'chunk.js',
         manualChunks: () => 'chunk.js',
         generatedCode: {
