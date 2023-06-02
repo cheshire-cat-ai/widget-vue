@@ -3,11 +3,13 @@ import { useRabbitHole } from '@stores/useRabbitHole'
 import { useMessages } from '@stores/useMessages'
 import { AcceptedContentTypes } from '@services/RabbitHole'
 import ModalBox from '@components/ModalBox.vue'
+import { generateDarkenColorFrom, generateForegroundColorFrom, convertToHsl } from '@utils/colors'
 
 const props = withDefaults(defineProps<{
 	url: string
 	api: string
 	dark?: boolean
+	primary?: string
 	secure?: boolean
 	timeout?: number
 	files?: typeof AcceptedContentTypes[number][]
@@ -15,6 +17,7 @@ const props = withDefaults(defineProps<{
 	files: () => Object.values(AcceptedContentTypes),
 	timeout: 10000,
 	secure: false,
+	primary: '',
 	dark: true
 })
 
@@ -23,7 +26,7 @@ const { dispatchMessage, selectRandomDefaultMessages } = messagesStore
 const { currentState: messagesState } = storeToRefs(messagesStore)
 
 const textArea = ref<HTMLElement>(), widgetRoot = ref<HTMLDivElement>()
-const userMessage = ref(''), insertedURL = ref(''), isTwoLines = ref(false)
+const userMessage = ref(''), insertedURL = ref(''), isTwoLines = ref(false), isScrollable = ref(false)
 const modalBox = ref<InstanceType<typeof ModalBox>>()
 
 const { isListening, isSupported, toggle: toggleRecording, result: transcript } = useSpeechRecognition()
@@ -73,6 +76,9 @@ watchEffect(() => {
  * When a new message arrives, the chat will be scrolled to bottom and the input box will be focussed.
  */
 watchDeep(messagesState, () => {
+	if (widgetRoot.value) {
+		isScrollable.value = widgetRoot.value?.scrollHeight > widgetRoot.value?.clientHeight
+	}
 	scrollToBottom()
 	textArea.value?.focus()
 }, { flush: 'post' })
@@ -80,7 +86,12 @@ watchDeep(messagesState, () => {
 /**
  * When switching to the widget, the input box is focussed.
  */
-onActivated(() => {
+onMounted(() => {
+	if (props.primary) {
+		document.documentElement.style.setProperty('--p', convertToHsl(props.primary)) // normal
+		document.documentElement.style.setProperty('--pf', generateDarkenColorFrom(props.primary)) // focus
+		document.documentElement.style.setProperty('--pc', generateForegroundColorFrom(props.primary)) // content
+	}
 	textArea.value?.focus()
 })
 
@@ -125,9 +136,9 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 <template>
 	<div class="relative flex h-full min-h-full w-full flex-col scroll-smooth transition-colors @container selection:bg-primary">
 		<NotificationStack />
-		<div id="w-root" ref="widgetRoot" class="flex h-full w-full grow flex-col justify-center gap-4 self-center overflow-y-auto pb-14 text-sm @lg:pb-20 @lg:text-base">
+		<div class="flex h-full w-full grow flex-col justify-center gap-4 self-center pb-14 text-sm @lg:pb-20 @lg:text-base">
 			<div v-if="!messagesState.ready" class="flex grow items-center justify-center self-center">
-				<p v-if="messagesState.error" class="w-fit rounded bg-error p-4 font-semibold text-base-100">
+				<p v-if="messagesState.error" class="w-fit rounded-md bg-error p-4 font-semibold text-base-100">
 					{{ messagesState.error }}
 				</p>
 				<p v-else class="flex flex-col items-center justify-center gap-2">
@@ -135,16 +146,16 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 					<span class="text-lg font-medium text-neutral">Getting ready...</span>
 				</p>
 			</div>
-			<div v-else-if="messagesState.messages.length" class="flex grow flex-col">
+			<div v-else-if="messagesState.messages.length" id="w-root" ref="widgetRoot" class="flex grow flex-col overflow-y-auto">
 				<MessageBox v-for="msg in messagesState.messages" :key="msg.id"
 					:sender="msg.sender" :text="msg.text" :dark="dark"
 					:why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''" />
-				<p v-if="messagesState.error" class="w-fit rounded bg-error p-4 font-semibold text-base-100">
+				<p v-if="messagesState.error" class="w-fit rounded-md bg-error p-4 font-semibold text-base-100">
 					{{ messagesState.error }}
 				</p>
-				<div v-else-if="!messagesState.error && messagesState.loading" class="ml-2">
+				<div v-else-if="!messagesState.error && messagesState.loading" class="mb-2 ml-2 flex items-center gap-2">
 					<span class="text-lg">😺</span>
-					<p class="ml-10 flex items-center gap-2">
+					<p class="flex items-center gap-2">
 						<span class="loading loading-dots loading-xs" />
 						Cheshire cat is thinking...
 					</p>
@@ -174,7 +185,7 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 									class="btn-primary btn-outline btn-sm btn-circle btn border-none hover:!bg-transparent hover:!text-primary-focus disabled:bg-transparent">
 									<heroicons-paper-clip-20-solid class="h-6 w-6" />
 								</MenuButton>
-								<MenuItems class="dropdown-content !-right-1/4 mb-4 flex flex-col gap-2 rounded bg-base-200 p-2 shadow-lg focus:outline-none">
+								<MenuItems class="dropdown-content !-right-1/4 mb-4 flex flex-col gap-2 rounded-md bg-base-200 p-2 shadow-lg focus:outline-none">
 									<MenuItem as="button" class="btn-info btn-sm btn-square btn" @click="modalBox?.toggleModal()">
 										<heroicons-globe-alt class="h-6 w-6" />
 									</MenuItem>
@@ -192,7 +203,7 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 					</button>
 				</div>
 			</div>
-			<button class="btn-primary btn-outline btn-sm btn-circle btn absolute bottom-20 right-4 bg-base-100"
+			<button v-if="isScrollable" class="btn-primary btn-outline btn-sm btn-circle btn absolute bottom-20 right-4 bg-base-100"
 				@click="scrollToBottom">
 				<heroicons-arrow-down-20-solid class="h-5 w-5" />
 			</button>
