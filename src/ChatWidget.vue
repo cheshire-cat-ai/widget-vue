@@ -4,6 +4,7 @@ import { useMessages } from '@stores/useMessages'
 import { AcceptedContentTypes } from '@services/RabbitHole'
 import ModalBox from '@components/ModalBox.vue'
 import { generateDarkenColorFrom, generateForegroundColorFrom, convertToHsl } from '@utils/colors'
+import type { Message } from '@models/Message'
 
 const props = withDefaults(defineProps<{
 	url: string
@@ -42,6 +43,10 @@ const inputDisabled = computed(() => {
 
 const randomDefaultMessages = selectRandomDefaultMessages()
 
+const emit = defineEmits<{
+	(e: 'onMessage', message: Message): void
+}>()
+
 /**
  * Handles the file upload change by calling the onUpload callback if it exists.
  */
@@ -76,6 +81,9 @@ watchEffect(() => {
  * When a new message arrives, the chat will be scrolled to bottom and the input box will be focussed.
  */
 watchDeep(messagesState, () => {
+	if (messagesState.value.messages.length > 0) {
+		emit('onMessage', messagesState.value.messages.slice(-1)[0])
+	}
 	if (widgetRoot.value) {
 		isScrollable.value = widgetRoot.value?.scrollHeight > widgetRoot.value?.clientHeight
 	}
