@@ -15,8 +15,11 @@
     
     <script>
       const catChat = document.querySelector("#cat-chat")
-      catChat.addEventListener("onMessage", ({ detail }) => {
-        console.log(detail.text)
+      catChat.addEventListener("message", ({ detail }) => {
+        console.log("Message:", detail.text)
+      })
+      catChat.addEventListener("upload", ({ detail }) => {
+        console.log("Uploaded content:", detail instanceof File ? detail.name : detail)
       })
     </script>
   </body>

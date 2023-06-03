@@ -44,7 +44,8 @@ const inputDisabled = computed(() => {
 const randomDefaultMessages = selectRandomDefaultMessages()
 
 const emit = defineEmits<{
-	(e: 'onMessage', message: Message): void
+	(e: 'message', message: Message): void,
+	(e: 'upload', content: File | string): void
 }>()
 
 /**
@@ -53,6 +54,7 @@ const emit = defineEmits<{
 onFileChange(files => {
 	if (files == null) return
 	sendFile(files[0])
+	emit('upload', files[0])
 })
 
 /**
@@ -82,7 +84,7 @@ watchEffect(() => {
  */
 watchDeep(messagesState, () => {
 	if (messagesState.value.messages.length > 0) {
-		emit('onMessage', messagesState.value.messages.slice(-1)[0])
+		emit('message', messagesState.value.messages.slice(-1)[0])
 	}
 	if (widgetRoot.value) {
 		isScrollable.value = widgetRoot.value?.scrollHeight > widgetRoot.value?.clientHeight
@@ -109,6 +111,7 @@ onMounted(() => {
 const dispatchWebsite = () => {
 	if (!insertedURL.value) return
 	sendWebsite(insertedURL.value)
+	emit('upload', insertedURL.value)
 	modalBox.value?.toggleModal()
 }
 

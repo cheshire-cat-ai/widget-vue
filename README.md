@@ -38,7 +38,7 @@ The available attributes are:
 | primary     | false    | String     | `#F3977B`      | The color to use to stylize the chat. |
 | secure      | false    | Boolean    | `false`       | `true` if the chat have to use the dark mode. `false` if not. |
 | timeout     | false    | Number     | `10000`       | The delay (in milliseconds) to wait before trying again to connect. |
-| files       | false    | ["text/plain", "text/markdown", "application/pdf"] | `["text/plain", "text/markdown", "application/pdf"]` | The accepted content types when uploading a file (must be supported by the cat) |
+| files       | false    | ["text/plain", "text/markdown", "application/pdf"] | `["text/plain", "text/markdown", "application/pdf"]` | The accepted content types when uploading a file (must be supported by the cat). |
 
 ## Events
 
@@ -50,14 +50,18 @@ You also have access to some events:
 </div>
 <script>
 const catChat = document.querySelector("#cat-chat")
-catChat.addEventListener("onMessage", ({ detail }) => {
+catChat.addEventListener("message", ({ detail }) => {
     console.log(detail.text)
+})
+catChat.addEventListener("upload", ({ detail }) => {
+    console.log("Uploaded content:", detail instanceof File ? detail.name : detail)
 })
 </script>
 ```
 
 The available events are:
 
-| Event     | Response | Description                                            |
-|-----------|----------|--------------------------------------------------------|
-| onMessage | Message  | Return the message every time a new one is dispatched. |
+| Event          | Response      | Description                                                 |
+|----------------|---------------|-------------------------------------------------------------|
+| message        | Message       | Return the message every time a new one is dispatched.      |
+| upload         | File | string | Return the upload content every time a new one is dispatched. It can be either a file or a website url. |
