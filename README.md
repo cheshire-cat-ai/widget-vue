@@ -63,5 +63,5 @@ The available events are:
 
 | Event          | Response      | Description                                                 |
 |----------------|---------------|-------------------------------------------------------------|
-| message        | Message       | Return the message every time a new one is dispatched.      |
-| upload         | File / string | Return the upload content every time a new one is dispatched. It can be either a file or a website url. |
+| message        | `Message`       | Return the message every time a new one is dispatched.      |
+| upload         | `File` / `string` | Return the upload content every time a new one is dispatched. It can be either a file object or a url. |
