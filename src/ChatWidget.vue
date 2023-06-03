@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { useRabbitHole } from '@stores/useRabbitHole'
 import { useMessages } from '@stores/useMessages'
+import { useNotifications } from '@stores/useNotifications'
 import { AcceptedContentTypes } from '@services/RabbitHole'
 import ModalBox from '@components/ModalBox.vue'
 import { generateDarkenColorFrom, generateForegroundColorFrom, convertToHsl } from '@utils/colors'
 import type { Message } from '@models/Message'
+import type { Notification } from '@models/Notification'
 
 const props = withDefaults(defineProps<{
 	url: string
 	api: string
+	callback?: string
 	dark?: boolean
 	primary?: string
 	secure?: boolean
@@ -20,6 +23,7 @@ const props = withDefaults(defineProps<{
 	secure: false,
 	dark: false,
 	primary: '',
+	callback: ''
 })
 
 const messagesStore = useMessages(`ws${props.secure ? 's' : ''}://${props.url}/ws`, props.timeout)()
@@ -37,6 +41,8 @@ const filesStore = useRabbitHole(`http${props.secure ? 's' : ''}://${props.url}/
 const { sendFile, sendWebsite } = filesStore
 const { currentState: rabbitHoleState } = storeToRefs(filesStore)
 
+const { currentState: notificationsState } = storeToRefs(useNotifications())
+
 const inputDisabled = computed(() => {
 	return messagesState.value.loading || !messagesState.value.ready || Boolean(messagesState.value.error)
 })
@@ -45,7 +51,8 @@ const randomDefaultMessages = selectRandomDefaultMessages()
 
 const emit = defineEmits<{
 	(e: 'message', message: Message): void,
-	(e: 'upload', content: File | string): void
+	(e: 'upload', content: File | string): void,
+	(e: 'notification', notification: Notification): void
 }>()
 
 /**
@@ -77,6 +84,16 @@ watchEffect(() => {
 	const isMultiLine = letterWidth * userMessage.value.length > textArea.value.offsetWidth
 	const hasLineBreak = !!(/\r|\n/.exec(userMessage.value))
 	isTwoLines.value = (textArea.value && !userMessage.value) || (isMultiLine || hasLineBreak)
+})
+
+/**
+ * When a new notification arrives, it will be sent through the emitted event.
+ */
+watchDeep(notificationsState, () => {
+	const lastNotification = notificationsState.value.history.slice(-1)[0]
+	if (!lastNotification.hidden) {
+		emit('notification', lastNotification)
+	}
 })
 
 /**
@@ -121,7 +138,7 @@ const dispatchWebsite = () => {
 const sendMessage = (message: string) => {
 	if (message === '') return
 	userMessage.value = ''
-	dispatchMessage(message)
+	dispatchMessage(props.callback ? (window as any)[props.callback](message) : message)
 }
 
 /**

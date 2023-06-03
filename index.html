@@ -8,16 +8,23 @@
   </head>
   <body>
     <div class="w-96 h-96 m-auto">
-      <cheshire-cat-chat id="cat-chat" api="none" timeout="5000" url="localhost:1865" primary="#00ff00" dark />
+      <cheshire-cat-chat id="cat-chat" api="none" callback="myCallback" timeout="5000" url="localhost:1865" primary="#00ff00" dark />
     </div>
     <script type="module" src="/src/main.ts"></script>
     <script>
+      function myCallback(message) {
+        console.log("Callback called.")
+        return `Talk in italian. ${message}`
+      }
       const catChat = document.querySelector("#cat-chat")
       catChat.addEventListener("message", ({ detail }) => {
         console.log("Message:", detail.text)
       })
       catChat.addEventListener("upload", ({ detail }) => {
         console.log("Uploaded content:", detail instanceof File ? detail.name : detail)
+      })
+      catChat.addEventListener("notification", ({ detail }) => {
+        console.log("Notification:", detail.text)
       })
     </script>
   </body>
