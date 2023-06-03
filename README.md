@@ -38,7 +38,7 @@ The available attributes are:
 | primary     | false    | String     | `#F3977B`     | The color to use to stylize the chat. |
 | secure      | false    | Boolean    | `false`       | `true` if the chat have to use the dark mode. `false` if not. |
 | timeout     | false    | Number     | `10000`       | The delay (in milliseconds) to wait before trying again to connect. |
-| callback    | false    | String     | User message  | The name of the function (declared globally) to call before passing the message to the cat. |
+| callback    | false    | String     | `''`          | The name of the function (declared globally) to call before passing the message to the cat. |
 | files       | false    | ["text/plain", "text/markdown", "application/pdf"] | `["text/plain", "text/markdown", "application/pdf"]` | The accepted content types when uploading a file (must be supported by the cat). |
 
 An example for the callback could be:
@@ -82,5 +82,5 @@ The available events are:
 | Event          | Response          | Description                                            |
 |----------------|-------------------|--------------------------------------------------------|
 | message        | `Message`         | Return the message every time a new one is dispatched. |
-| upload         | `File` / `string` | Return the upload content every time a new one is dispatched. It can be either a file object or a url. |
+| upload         | `File` / `string` | Return the uploaded content every time a new one is dispatched. It can be either a file object or a url. |
 | notification   | `Notification`    | Return the notification every time a new one is dispatched. |
