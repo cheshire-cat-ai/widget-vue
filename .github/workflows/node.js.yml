@@ -29,3 +29,14 @@ jobs:
     - run: npm ci
     - run: npm run lint
     - run: npm run build --if-present
+    - name: Purge jsDelivr cache
+      # You may pin to the exact commit or the version.
+      # uses: gacts/purge-jsdelivr-cache@71fc7e172e0ef9559bfd251f43d75cf39cbeedba
+      uses: gacts/purge-jsdelivr-cache@v1.0.2
+      with:
+        # URLs for the cache purging (string|list)
+        url: |
+            https://cdn.jsdelivr.net/gh/cheshire-cat-ai/widget-vue@main/example/widget.js
+            https://cdn.jsdelivr.net/gh/cheshire-cat-ai/widget-vue@main/example/widget.css
+        # Retry attempts (on the request failing)
+        attempts: 3
