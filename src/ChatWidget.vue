@@ -7,6 +7,7 @@ import ModalBox from '@components/ModalBox.vue'
 import { generateDarkenColorFrom, generateForegroundColorFrom, convertToHsl } from '@utils/colors'
 import type { Message } from '@models/Message'
 import type { Notification } from '@models/Notification'
+import { Features } from '@utils/commons'
 
 const props = withDefaults(defineProps<{
 	url: string
@@ -17,6 +18,7 @@ const props = withDefaults(defineProps<{
 	secure?: boolean
 	timeout?: number
 	defaults?: string[]
+	features?: typeof Features[number][]
 	files?: typeof AcceptedContentTypes[number][]
 }>(), {
 	files: () => Object.values(AcceptedContentTypes),
@@ -25,6 +27,7 @@ const props = withDefaults(defineProps<{
 	dark: false,
 	primary: '',
 	defaults: () => [],
+	features: () => Object.values(Features),
 	callback: ''
 })
 
@@ -32,9 +35,14 @@ const messagesStore = useMessages(`ws${props.secure ? 's' : ''}://${props.url}/w
 const { dispatchMessage, selectRandomDefaultMessages } = messagesStore
 const { currentState: messagesState } = storeToRefs(messagesStore)
 
-const textArea = ref<HTMLElement>(), widgetRoot = ref<HTMLDivElement>()
-const userMessage = ref(''), insertedURL = ref(''), isTwoLines = ref(false), isScrollable = ref(false)
+const textArea = ref<HTMLTextAreaElement>(), widgetRoot = ref<HTMLDivElement>()
+const userMessage = ref(''), insertedURL = ref(''), isScrollable = ref(false)
 const modalBox = ref<InstanceType<typeof ModalBox>>()
+
+useTextareaAutosize({
+	element: textArea,
+	input: userMessage
+})
 
 const { isListening, isSupported, toggle: toggleRecording, result: transcript } = useSpeechRecognition()
 const { open: openFile, onChange: onFileChange } = useFileDialog()
@@ -72,20 +80,6 @@ onFileChange(files => {
 watchEffect(() => {
 	if (transcript.value === '') return
 	userMessage.value = transcript.value
-})
-
-/**
- * Checks if the textarea needs to be multiline and updates the state accordingly.
- */
-watchEffect(() => {
-	if (!textArea.value || !userMessage.value) {
-		isTwoLines.value = false
-		return
-	}
-	const letterWidth = 8.275
-	const isMultiLine = letterWidth * userMessage.value.length > textArea.value.offsetWidth
-	const hasLineBreak = !!(/\r|\n/.exec(userMessage.value))
-	isTwoLines.value = (textArea.value && !userMessage.value) || (isMultiLine || hasLineBreak)
 })
 
 /**
@@ -200,9 +194,11 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 			<div class="absolute bottom-0 left-0 flex w-full items-center justify-center bg-gradient-to-t from-base-100">
 				<div class="flex w-full items-center gap-2 @lg:gap-4">
 					<div class="relative w-full">
-						<textarea ref="textArea" v-model="userMessage" :rows="isTwoLines ? '2' : '1'" :disabled="inputDisabled"
-							class="textarea-bordered textarea block w-full resize-none overflow-hidden border-2 !pr-20 !outline-none !ring-0 transition focus:border-2 focus:border-primary"
-							:placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)" @keydown="preventSend" />
+						<textarea ref="textArea" v-model="userMessage" :disabled="inputDisabled"
+							class="textarea-bordered textarea block max-h-20 w-full resize-none overflow-hidden border-2 !outline-none !ring-0 transition focus:border-2 focus:border-primary"
+							:placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)" 
+							:class="[ features.includes('web') || features.includes('file') ? 'pr-20' : 'pr-10' ]"
+							@keydown="preventSend" />
 						<div class="absolute inset-y-0 right-0 flex gap-1 pr-2">
 							<button :disabled="inputDisabled"
 								class="btn-outline btn-sm btn-circle btn self-center border-none text-neutral hover:!bg-transparent hover:text-neutral disabled:bg-transparent"
@@ -210,16 +206,16 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 								<heroicons-paper-airplane-solid v-if="userMessage.length > 0" class="h-6 w-6" />
 								<heroicons-paper-airplane v-else class="h-6 w-6" />
 							</button>
-							<Menu as="div" class="dropdown-top dropdown-end dropdown self-center">
+							<Menu v-if="features.includes('web') || features.includes('file')" as="div" class="dropdown-top dropdown-end dropdown self-center">
 								<MenuButton :disabled="inputDisabled || rabbitHoleState.loading"
 									class="btn-primary btn-outline btn-sm btn-circle btn border-none hover:!bg-transparent hover:!text-primary-focus disabled:bg-transparent">
 									<heroicons-paper-clip-20-solid class="h-6 w-6" />
 								</MenuButton>
 								<MenuItems class="dropdown-content !-right-1/4 mb-4 flex flex-col gap-2 rounded-md bg-base-200 p-2 shadow-lg focus:outline-none">
-									<MenuItem as="button" class="btn-info btn-sm btn-square btn" @click="modalBox?.toggleModal()">
+									<MenuItem v-if="features.includes('web')" as="button" class="btn-info btn-sm btn-square btn" @click="modalBox?.toggleModal()">
 										<heroicons-globe-alt class="h-6 w-6" />
 									</MenuItem>
-									<MenuItem as="button" class="btn-warning btn-sm btn-square btn"
+									<MenuItem v-if="features.includes('file')" as="button" class="btn-warning btn-sm btn-square btn"
 										@click="openFile({ multiple: false, accept: files.join(', ') })">
 										<heroicons-document-text-solid class="h-6 w-6" />
 									</MenuItem>
@@ -227,7 +223,7 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 							</Menu>
 						</div>
 					</div>
-					<button v-if="isSupported" class="btn-primary btn-circle btn" :class="[isListening ? 'btn-outline glass' : '']"
+					<button v-if="isSupported && features.includes('record')" class="btn-primary btn-circle btn" :class="[isListening ? 'btn-outline glass' : '']"
 						:disabled="inputDisabled" @click="toggleRecording()">
 						<heroicons-microphone-solid class="h-6 w-6" />
 					</button>

@@ -41,6 +41,7 @@ The available attributes are:
 | callback    | false    | String     | `''`          | The name of the function (declared globally) to call before passing the message to the cat. |
 | files       | false    | String[]   | `["text/plain", "text/markdown", "application/pdf"]` | The accepted content types when uploading a file (must be supported by the cat). |
 | defaults    | false    | String[]   | `Check stores/useMessages.ts line 14` | The default messages to show before starting the conversation with the cat. |
+| features    | false    | String[]   | `['record', 'web', 'file']` | The features that the user can use. |
 
 An example could be:
 
@@ -52,6 +53,7 @@ An example could be:
     const catChat = document.querySelector("#cat-chat")
     
     catChat.defaults = ['Ehy, ciao!', 'Come va?', 'Chi sei?', 'Mostrami cosa sai fare', 'Dammi il cinque!']
+    catChat.features = ['web']
     catChat.files = ['text/plain', 'application/pdf']
 
     function myCallback(message) {
@@ -67,7 +69,7 @@ You also have access to some events:
 
 ```html
 <div class="w-96 h-96 m-auto">
-    <cheshire-cat-chat id="cat-chat" api="none" timeout="5000" url="localhost:1865" primary="#00ff00" dark />
+    <cheshire-cat-chat id="cat-chat" api="none" url="localhost:1865" />
 </div>
 <script>
 const catChat = document.querySelector("#cat-chat")

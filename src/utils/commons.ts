@@ -3,6 +3,8 @@
  * The functions are grouped by their purpose and exported as named exports.
  */
 
+export const Features = ['record', 'web', 'file'] as const
+
 let ids = 0
 
 /**
