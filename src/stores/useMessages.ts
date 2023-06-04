@@ -87,8 +87,8 @@ export const useMessages = (endpoint: string, timeout: number) => {
     /**
      * Selects 5 random default messages from the messages slice.
      */
-    const selectRandomDefaultMessages = () => {
-      const messages = [...currentState.defaultMessages]
+    const selectRandomDefaultMessages = (defaults: string[] = []) => {
+      const messages = defaults.length > 0 ? [...defaults] : [...currentState.defaultMessages]
       const shuffled = messages.sort(() => 0.5 - Math.random())
       return shuffled.slice(0, 5)
     }
@@ -96,8 +96,12 @@ export const useMessages = (endpoint: string, timeout: number) => {
     /**
      * Sends a message to the messages service and optimistically dispatches it to the store
      */
-    const dispatchMessage = (message: string) => {
-      MessagesService.send(message)
+    const dispatchMessage = (message: string, callback = '') => {
+      if ((window as any)[callback]) MessagesService.send((window as any)[callback](message))
+      else {
+        MessagesService.send(message)
+        if (callback) console.error("Callback function not found")
+      }
       addMessage({
         id: uniqueId(),
         text: message.trim(),

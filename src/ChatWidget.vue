@@ -16,6 +16,7 @@ const props = withDefaults(defineProps<{
 	primary?: string
 	secure?: boolean
 	timeout?: number
+	defaults?: string[]
 	files?: typeof AcceptedContentTypes[number][]
 }>(), {
 	files: () => Object.values(AcceptedContentTypes),
@@ -23,6 +24,7 @@ const props = withDefaults(defineProps<{
 	secure: false,
 	dark: false,
 	primary: '',
+	defaults: () => [],
 	callback: ''
 })
 
@@ -47,7 +49,7 @@ const inputDisabled = computed(() => {
 	return messagesState.value.loading || !messagesState.value.ready || Boolean(messagesState.value.error)
 })
 
-const randomDefaultMessages = selectRandomDefaultMessages()
+const randomDefaultMessages = selectRandomDefaultMessages(props.defaults)
 
 const emit = defineEmits<{
 	(e: 'message', message: Message): void,
@@ -138,7 +140,7 @@ const dispatchWebsite = () => {
 const sendMessage = (message: string) => {
 	if (message === '') return
 	userMessage.value = ''
-	dispatchMessage(props.callback ? (window as any)[props.callback](message) : message)
+	dispatchMessage(message, props.callback)
 }
 
 /**
@@ -164,7 +166,7 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 <template>
 	<div class="relative flex h-full min-h-full w-full flex-col scroll-smooth transition-colors @container selection:bg-primary">
 		<NotificationStack />
-		<div class="flex h-full w-full grow flex-col justify-center gap-4 self-center pb-14 text-sm @lg:pb-20 @lg:text-base">
+		<div class="flex h-full w-full flex-auto flex-col justify-center gap-4 self-center pb-14 text-sm">
 			<div v-if="!messagesState.ready" class="flex grow items-center justify-center self-center">
 				<p v-if="messagesState.error" class="w-fit rounded-md bg-error p-4 font-semibold text-base-100">
 					{{ messagesState.error }}
@@ -189,14 +191,14 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 					</p>
 				</div>
 			</div>
-			<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4">
+			<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4 overflow-y-auto">
 				<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn-neutral btn-sm btn rounded-lg font-normal normal-case shadow-xl @lg:btn-md"
 					@click="sendMessage(msg)">
 					{{ msg }}
 				</div>
 			</div>
-			<div class="absolute bottom-0 left-0 flex w-full items-center justify-center bg-gradient-to-t from-base-100 p-2 @lg:p-4">
-				<div class="flex w-full items-center gap-2 @md:gap-4">
+			<div class="absolute bottom-0 left-0 flex w-full items-center justify-center bg-gradient-to-t from-base-100">
+				<div class="flex w-full items-center gap-2 @lg:gap-4">
 					<div class="relative w-full">
 						<textarea ref="textArea" v-model="userMessage" :rows="isTwoLines ? '2' : '1'" :disabled="inputDisabled"
 							class="textarea-bordered textarea block w-full resize-none overflow-hidden border-2 !pr-20 !outline-none !ring-0 transition focus:border-2 focus:border-primary"

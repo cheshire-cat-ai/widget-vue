@@ -41,7 +41,7 @@ const cleanedText = props.text.replace(/""?(.+)"?"/gm, '$1')
 		<div class="chat-image px-2 text-lg">
 			{{ sender === 'bot' ? '😺' : '🙂' }}
 		</div>
-		<div class="chat-bubble my-2 min-h-fit break-words rounded-lg p-2.5 @lg:p-4" :class="{ '!pr-10': why }">
+		<div class="chat-bubble my-2 min-h-fit break-words rounded-lg p-2 @lg:p-3" :class="{ '!pr-10': why }">
 			<p v-html="markdown.render(cleanedText)" />
 			<button v-if="why" class="btn-primary btn-square btn-xs btn absolute right-1 top-1 m-1 !p-0"
 				@click="whyPanel?.togglePanel()">
