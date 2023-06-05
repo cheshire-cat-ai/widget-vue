@@ -184,11 +184,9 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 		class="relative flex h-full min-h-full w-full flex-col scroll-smooth transition-colors @container selection:bg-primary">
 		<NotificationStack />
 		<div v-if="messagesState.messages.length && features.includes('reset') && !messagesState.loading" 
-			class="toast-center toast toast-top z-50 p-3 text-sm">
+			class="toast-center toast toast-top z-40 p-3 text-sm">
 			<div class="btn-info btn-sm btn normal-case" @click="clearConversation">
-				<span>
-					Clear conversation
-				</span>
+				<span>Clear conversation</span>
 			</div>
 		</div>
 		<div class="flex h-full w-full flex-auto flex-col justify-center gap-4 self-center pb-14 text-sm">

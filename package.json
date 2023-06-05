@@ -1,5 +1,5 @@
 {
-  "name": "ccat-admin",
+  "name": "ccat-widget-vue",
   "version": "1.0.0",
   "private": false,
   "author": "Project contributors",
@@ -29,7 +29,6 @@
     "vue3-webcomponent-wrapper": "^0.2.0"
   },
   "devDependencies": {
-    "@iconify-json/akar-icons": "^1.1.17",
     "@iconify-json/heroicons": "^1.1.10",
     "@rushstack/eslint-patch": "^1.3.0",
     "@tsconfig/node18": "^2.0.1",
