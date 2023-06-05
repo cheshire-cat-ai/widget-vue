@@ -215,7 +215,7 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 				</div>
 			</div>
 			<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4 overflow-y-auto">
-				<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn-neutral btn-sm btn rounded-lg font-normal normal-case shadow-xl @lg:btn-md"
+				<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn-neutral btn-sm btn rounded-lg font-normal normal-case shadow-xl @md:btn-md"
 					@click="sendMessage(msg)">
 					{{ msg }}
 				</div>
