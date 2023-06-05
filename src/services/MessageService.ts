@@ -4,6 +4,7 @@
  * sending or receiving data.
  */
 import { useWebSocket } from '@vueuse/core'
+import { getConfig } from '@/config'
 
 /**
  * A map of error codes to error messages.
@@ -40,13 +41,13 @@ const MessagesService = Object.freeze({
   /**
    * Initializes the WebSocket connection as well as the message and error handlers
    */
-  connect(endpoint: string, timeout: number, onConnected: OnConnected | null = null) {
-    socket = useWebSocket(endpoint, {
+  connect(onConnected: OnConnected | null = null) {
+    socket = useWebSocket(getConfig().endpoints?.chat, {
       immediate: true,
       autoClose: false,
       autoReconnect: {
         retries: 3,
-        delay: timeout
+        delay: getConfig().socketTimeout
       },
       onConnected() {
         if (onConnected) {

@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { useRabbitHole } from '@stores/useRabbitHole'
 import { useMessages } from '@stores/useMessages'
+import { useMemory } from '@stores/useMemory'
 import { useNotifications } from '@stores/useNotifications'
 import { AcceptedContentTypes } from '@services/RabbitHole'
 import ModalBox from '@components/ModalBox.vue'
 import { generateDarkenColorFrom, generateForegroundColorFrom, convertToHsl } from '@utils/colors'
 import type { Message } from '@models/Message'
 import type { Notification } from '@models/Notification'
-import { Features } from '@utils/commons'
+import { setConfig, Features } from '@/config'
 
 const props = withDefaults(defineProps<{
 	url: string
@@ -31,7 +32,20 @@ const props = withDefaults(defineProps<{
 	callback: ''
 })
 
-const messagesStore = useMessages(`ws${props.secure ? 's' : ''}://${props.url}/ws`, props.timeout)()
+const protocol = props.secure ? 's' : ''
+
+setConfig({
+	apiKey: props.api,
+	socketTimeout: props.timeout,
+	features: props.features,
+	endpoints: {
+		chat: `ws${protocol}://${props.url}/ws`,
+		rabbitHole: `http${protocol}://${props.url}/rabbithole/`,
+		wipeConversation: `http${protocol}://${props.url}/memory/working-memory/conversation-history/`
+	}
+})
+
+const messagesStore = useMessages()
 const { dispatchMessage, selectRandomDefaultMessages } = messagesStore
 const { currentState: messagesState } = storeToRefs(messagesStore)
 
@@ -47,11 +61,13 @@ useTextareaAutosize({
 const { isListening, isSupported, toggle: toggleRecording, result: transcript } = useSpeechRecognition()
 const { open: openFile, onChange: onFileChange } = useFileDialog()
 
-const filesStore = useRabbitHole(`http${props.secure ? 's' : ''}://${props.url}/rabbithole/`, props.api)()
+const filesStore = useRabbitHole()
 const { sendFile, sendWebsite } = filesStore
 const { currentState: rabbitHoleState } = storeToRefs(filesStore)
 
 const { currentState: notificationsState } = storeToRefs(useNotifications())
+
+const { wipeConversation } = useMemory()
 
 const inputDisabled = computed(() => {
 	return messagesState.value.loading || !messagesState.value.ready || Boolean(messagesState.value.error)
@@ -111,9 +127,10 @@ watchDeep(messagesState, () => {
  */
 onMounted(() => {
 	if (props.primary) {
-		document.documentElement.style.setProperty('--p', convertToHsl(props.primary)) // normal
-		document.documentElement.style.setProperty('--pf', generateDarkenColorFrom(props.primary)) // focus
-		document.documentElement.style.setProperty('--pc', generateForegroundColorFrom(props.primary)) // content
+		const catChat = document.querySelector('[data-theme]') as HTMLDivElement
+		catChat.style.setProperty('--p', convertToHsl(props.primary)) // normal
+		catChat.style.setProperty('--pf', generateDarkenColorFrom(props.primary)) // focus
+		catChat.style.setProperty('--pc', generateForegroundColorFrom(props.primary)) // content
 	}
 	textArea.value?.focus()
 })
@@ -126,6 +143,11 @@ const dispatchWebsite = () => {
 	sendWebsite(insertedURL.value)
 	emit('upload', insertedURL.value)
 	modalBox.value?.toggleModal()
+}
+
+const clearConversation = async () => {
+	const res = await wipeConversation()
+	if (res) messagesState.value.messages = []
 }
 
 /**
@@ -158,8 +180,16 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 </script>
 
 <template>
-	<div class="relative flex h-full min-h-full w-full flex-col scroll-smooth transition-colors @container selection:bg-primary">
+	<div :data-theme="dark ? 'dark' : 'light'" 
+		class="relative flex h-full min-h-full w-full flex-col scroll-smooth transition-colors @container selection:bg-primary">
 		<NotificationStack />
+		<div v-if="messagesState.messages.length && features.includes('reset')" class="toast-center toast toast-top z-50 p-3 text-sm">
+			<div class="btn-info btn-sm btn normal-case" @click="clearConversation">
+				<span>
+					Clear conversation
+				</span>
+			</div>
+		</div>
 		<div class="flex h-full w-full flex-auto flex-col justify-center gap-4 self-center pb-14 text-sm">
 			<div v-if="!messagesState.ready" class="flex grow items-center justify-center self-center">
 				<p v-if="messagesState.error" class="w-fit rounded-md bg-error p-4 font-semibold text-base-100">

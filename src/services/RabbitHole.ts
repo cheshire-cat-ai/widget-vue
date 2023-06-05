@@ -3,22 +3,23 @@
  * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
  * sending or receiving data.
  */
-import { toJSON, authFetch } from '@utils/commons'
+import { toJSON } from '@utils/commons'
+import { authFetch, getConfig } from '@/config'
 
 /*
  * This service is used to send files down to the rabbit hole.
  * Meaning this service sends files to the backend.
  */
 const RabbitHoleService = Object.freeze({
-  sendFile: async (apiKey: string, endpoint: string, file: File) => {
+  sendFile: async (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
 
     const options = { method: 'POST', body: formData }
 
-    return await authFetch(apiKey, endpoint, options).then<RabbitHoleFileResponse>(toJSON)
+    return await authFetch(getConfig().endpoints.rabbitHole, options).then<RabbitHoleFileResponse>(toJSON)
   },
-  sendWeb: async (apiKey: string, endpoint: string, url: string) => {
+  sendWeb: async (url: string) => {
     const options = { 
       method: 'POST', 
       headers: {
@@ -27,14 +28,14 @@ const RabbitHoleService = Object.freeze({
       body: JSON.stringify({ url }) 
     }
 
-    return await authFetch(apiKey, endpoint, options).then<RabbitHoleWebResponse>(toJSON)
+    return await authFetch(getConfig().endpoints.rabbitHole.concat('web/'), options).then<RabbitHoleWebResponse>(toJSON)
   },
 })
 
 export const AcceptedContentTypes = ['text/plain', 'text/markdown', 'application/pdf'] as const
 
 export interface RabbitHoleFileResponse {
-  'content-type': typeof AcceptedContentTypes[number]
+  'Content-Type': typeof AcceptedContentTypes[number]
   filename: string
   info: string
 }

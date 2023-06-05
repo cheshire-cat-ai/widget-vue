@@ -62,6 +62,6 @@ const cleanedText = props.text.replace(/""?(.+)"?"/gm, '$1')
 }
 
 .chat-bubble > p a {
-	@apply underline text-info font-medium;
+	@apply link link-info;
 }
 </style>

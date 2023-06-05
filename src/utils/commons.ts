@@ -3,8 +3,6 @@
  * The functions are grouped by their purpose and exported as named exports.
  */
 
-export const Features = ['record', 'web', 'file'] as const
-
 let ids = 0
 
 /**
@@ -27,16 +25,3 @@ export const toJSON = async <TResult>(response: Response) => await (response.jso
  * Takes in a string and returns a new string with the first letter capitalized
  */
 export const firstLetter = <TString extends string>(str: TString) => str.charAt(0).toUpperCase()
-
-/**
- * Makes an authenticated request to the endpoints by passing the access_token.
- */
-export const authFetch = (apiKey: string | null, url: string, options: RequestInit = {}) => {
-    if (apiKey) {
-        const headers = options.headers as Record<string, string> ?? {}
-        headers["access_token"] = apiKey
-        options.headers = headers
-    }
-
-    return fetch(url, options)
-}
