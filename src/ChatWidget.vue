@@ -49,7 +49,7 @@ const messagesStore = useMessages()
 const { dispatchMessage, selectRandomDefaultMessages } = messagesStore
 const { currentState: messagesState } = storeToRefs(messagesStore)
 
-const textArea = ref<HTMLTextAreaElement>(), widgetRoot = ref<HTMLDivElement>()
+const textArea = ref<HTMLTextAreaElement>(), widgetRoot = ref<HTMLDivElement>(), chatRoot = ref<HTMLDivElement>()
 const userMessage = ref(''), insertedURL = ref(''), isScrollable = ref(false)
 const modalBox = ref<InstanceType<typeof ModalBox>>()
 
@@ -115,8 +115,8 @@ watchDeep(messagesState, () => {
 	if (messagesState.value.messages.length > 0) {
 		emit('message', messagesState.value.messages.slice(-1)[0])
 	}
-	if (widgetRoot.value) {
-		isScrollable.value = widgetRoot.value?.scrollHeight > widgetRoot.value?.clientHeight
+	if (chatRoot.value) {
+		isScrollable.value = chatRoot.value?.scrollHeight > chatRoot.value?.clientHeight
 	}
 	scrollToBottom()
 	textArea.value?.focus()
@@ -126,11 +126,10 @@ watchDeep(messagesState, () => {
  * When switching to the widget, the input box is focussed.
  */
 onMounted(() => {
-	if (props.primary) {
-		const catChat = document.querySelector('[data-theme]') as HTMLDivElement
-		catChat.style.setProperty('--p', convertToHsl(props.primary)) // normal
-		catChat.style.setProperty('--pf', generateDarkenColorFrom(props.primary)) // focus
-		catChat.style.setProperty('--pc', generateForegroundColorFrom(props.primary)) // content
+	if (props.primary && widgetRoot.value) {
+		widgetRoot.value.style.setProperty('--p', convertToHsl(props.primary)) // normal
+		widgetRoot.value.style.setProperty('--pf', generateDarkenColorFrom(props.primary)) // focus
+		widgetRoot.value.style.setProperty('--pc', generateForegroundColorFrom(props.primary)) // content
 	}
 	textArea.value?.focus()
 })
@@ -176,19 +175,13 @@ const generatePlaceholder = (isLoading: boolean, isRecording: boolean, error?: s
 	return 'Ask the Cheshire Cat...'
 }
 
-const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', left: 0, top: widgetRoot.value?.scrollHeight })
+const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left: 0, top: chatRoot.value?.scrollHeight })
 </script>
 
 <template>
-	<div :data-theme="dark ? 'dark' : 'light'" 
+	<div ref="widgetRoot" :data-theme="dark ? 'dark' : 'light'"
 		class="relative flex h-full min-h-full w-full flex-col scroll-smooth transition-colors @container selection:bg-primary">
 		<NotificationStack />
-		<div v-if="messagesState.messages.length && features.includes('reset') && !messagesState.loading" 
-			class="toast-center toast toast-top z-40 p-3 text-sm">
-			<div class="btn-info btn-sm btn normal-case" @click="clearConversation">
-				<span>Clear conversation</span>
-			</div>
-		</div>
 		<div class="flex h-full w-full flex-auto flex-col justify-center gap-4 self-center pb-14 text-sm">
 			<div v-if="!messagesState.ready" class="flex grow items-center justify-center self-center">
 				<p v-if="messagesState.error" class="w-fit rounded-md bg-error p-4 font-semibold text-base-100">
@@ -199,10 +192,10 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 					<span class="text-lg font-medium text-neutral">Getting ready...</span>
 				</p>
 			</div>
-			<div v-else-if="messagesState.messages.length" id="w-root" ref="widgetRoot" class="flex grow flex-col overflow-y-auto">
-				<MessageBox v-for="msg in messagesState.messages" :key="msg.id"
-					:sender="msg.sender" :text="msg.text" :dark="dark"
-					:why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''" />
+			<div v-else-if="messagesState.messages.length" id="w-root" ref="chatRoot"
+				class="flex grow flex-col overflow-y-auto">
+				<MessageBox v-for="msg in messagesState.messages" :key="msg.id" :sender="msg.sender" :text="msg.text"
+					:dark="dark" :why="msg.sender === 'bot' ? JSON.stringify(msg.why) : ''" />
 				<p v-if="messagesState.error" class="w-fit rounded-md bg-error p-4 font-semibold text-base-100">
 					{{ messagesState.error }}
 				</p>
@@ -215,7 +208,8 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 				</div>
 			</div>
 			<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4 overflow-y-auto">
-				<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn-neutral btn-sm btn rounded-lg font-normal normal-case shadow-xl @md:btn-md"
+				<div v-for="(msg, index) in randomDefaultMessages" :key="index"
+					class="btn-neutral btn-sm btn rounded-lg font-normal normal-case shadow-xl @md:btn-md"
 					@click="sendMessage(msg)">
 					{{ msg }}
 				</div>
@@ -225,40 +219,63 @@ const scrollToBottom = () => widgetRoot.value?.scrollTo({ behavior: 'smooth', le
 					<div class="relative w-full">
 						<textarea ref="textArea" v-model="userMessage" :disabled="inputDisabled"
 							class="textarea-bordered textarea block max-h-20 w-full resize-none overflow-hidden border-2 !outline-none !ring-0 transition focus:border-2 focus:border-primary"
-							:placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)" 
-							:class="[ features.includes('web') || features.includes('file') ? 'pr-20' : 'pr-10' ]"
+							:placeholder="generatePlaceholder(messagesState.loading, isListening, messagesState.error)"
+							:class="[features.includes('web') || features.includes('file') ? 'pr-20' : 'pr-10']"
 							@keydown="preventSend" />
 						<div class="absolute inset-y-0 right-0 flex gap-1 pr-2">
-							<button :disabled="inputDisabled"
-								class="btn-outline btn-sm btn-circle btn self-center border-none text-neutral hover:!bg-transparent hover:text-neutral disabled:bg-transparent"
+							<button :disabled="inputDisabled || userMessage.length === 0"
+								class="btn-ghost btn-sm btn-circle btn self-center"
 								@click="sendMessage(userMessage)">
-								<heroicons-paper-airplane-solid v-if="userMessage.length > 0" class="h-6 w-6" />
-								<heroicons-paper-airplane v-else class="h-6 w-6" />
+								<heroicons-paper-airplane-solid class="h-6 w-6" />
 							</button>
-							<Menu v-if="features.includes('web') || features.includes('file')" as="div" class="dropdown-top dropdown-end dropdown self-center">
-								<MenuButton :disabled="inputDisabled || rabbitHoleState.loading"
-									class="btn-primary btn-outline btn-sm btn-circle btn border-none hover:!bg-transparent hover:!text-primary-focus disabled:bg-transparent">
+							<div class="dropdown-top dropdown-end dropdown self-center">
+								<button tabindex="0" :disabled="inputDisabled" class="btn-ghost btn-sm btn-circle btn">
 									<heroicons-paper-clip-20-solid class="h-6 w-6" />
-								</MenuButton>
-								<MenuItems class="dropdown-content !-right-1/4 mb-4 flex flex-col gap-2 rounded-md bg-base-200 p-2 shadow-lg focus:outline-none">
-									<MenuItem v-if="features.includes('web')" as="button" class="btn-info btn-sm btn-square btn" @click="modalBox?.toggleModal()">
-										<heroicons-globe-alt class="h-6 w-6" />
-									</MenuItem>
-									<MenuItem v-if="features.includes('file')" as="button" class="btn-warning btn-sm btn-square btn"
-										@click="openFile({ multiple: false, accept: files.join(', ') })">
-										<heroicons-document-text-solid class="h-6 w-6" />
-									</MenuItem>
-								</MenuItems>
-							</Menu>
+								</button>
+								<ul tabindex="0" class="dropdown-content join-vertical join !-right-1/4 mb-4 p-0">
+									<li>
+										<button :disabled="rabbitHoleState.loading" 
+											class="join-item btn w-full flex-nowrap justify-end px-2" 
+											@click="modalBox?.toggleModal()">
+											<span class="normal-case">Upload url</span>
+											<span class="rounded-lg bg-info p-1 text-base-100">
+												<heroicons-globe-alt class="h-6 w-6" />
+											</span>
+										</button>
+									</li>
+									<li>
+										<button :disabled="rabbitHoleState.loading" 
+											class="join-item btn w-full flex-nowrap justify-end px-2" 
+											@click="openFile({ multiple: false, accept: files.join(', ') })">
+											<span class="normal-case">Upload file</span>
+											<span class="rounded-lg bg-warning p-1 text-base-100">
+												<heroicons-document-text-solid class="h-6 w-6" />
+											</span>
+										</button>
+									</li>
+									<li>
+										<button :disabled="messagesState.messages.length === 0" 
+											class="join-item btn w-full flex-nowrap justify-end px-2" 
+											@click="clearConversation()">
+											<span class="normal-case">Clear conversation</span>
+											<span class="rounded-lg bg-error p-1 text-base-100">
+												<heroicons-trash-solid class="h-6 w-6" />
+											</span>
+										</button>
+									</li>
+								</ul>
+							</div>
 						</div>
 					</div>
-					<button v-if="isSupported && features.includes('record')" class="btn-primary btn-circle btn" :class="[isListening ? 'btn-outline glass' : '']"
-						:disabled="inputDisabled" @click="toggleRecording()">
+					<button v-if="isSupported && features.includes('record')" class="btn-primary btn-circle btn"
+						:class="[isListening ? 'btn-outline glass' : '']" :disabled="inputDisabled"
+						@click="toggleRecording()">
 						<heroicons-microphone-solid class="h-6 w-6" />
 					</button>
 				</div>
 			</div>
-			<button v-if="isScrollable" class="btn-primary btn-outline btn-sm btn-circle btn absolute bottom-20 right-4 bg-base-100"
+			<button v-if="isScrollable"
+				class="btn-primary btn-outline btn-sm btn-circle btn absolute bottom-20 right-4 bg-base-100"
 				@click="scrollToBottom">
 				<heroicons-arrow-down-20-solid class="h-5 w-5" />
 			</button>

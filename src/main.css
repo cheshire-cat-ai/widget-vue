@@ -11,15 +11,8 @@
 }
 
 @layer components {
-  .btn-outline {
-    @apply border-2;
-  }
-  .btn-sm {
-    @apply leading-5;
-  }
-  .btn-outline.btn-error:hover, .btn-outline.btn-success:hover,
-  .btn-outline.btn-info:hover, .btn-outline.btn-warning:hover {
-    @apply text-base-100;
+  .btn-ghost {
+    @apply disabled:bg-transparent;
   }
   .btn-error:hover:not(.btn-outline), .btn-error.btn-active:not(.btn-outline),
   .btn-info:hover:not(.btn-outline), .btn-info.btn-active:not(.btn-outline),

@@ -5,25 +5,39 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cheshire Cat Chat</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem;
+        height: 100vh;
+      }
+      .chat-title {
+        font-size: 3rem;
+        text-align: center;
+        font-weight: 800;
+      }
+      #cat-chat {
+        flex-grow: 1;
+      }
+    </style>
   </head>
-  <body>
-    <div class="w-96 h-96 m-auto">
-      <cheshire-cat-chat 
-        id="cat-chat" 
-        api="none" 
-        callback="myCallback" 
-        timeout="5000" 
-        url="localhost:1865" 
-        primary="#00ff00"
-        dark 
-      />
-    </div>
+  <body data-theme="light">
+    <h1 class="chat-title">Cat ready to hack!</h1>
+    <cheshire-cat-chat 
+      id="cat-chat" 
+      api="none" 
+      callback="myCallback" 
+      timeout="5000" 
+      url="localhost:1865" 
+      primary="#00ff00"
+    />
     <script type="module" src="/src/main.ts"></script>
     <script>
       const catChat = document.querySelector("#cat-chat")
       
       catChat.defaults = ['Ehy, ciao!', 'Come va?', 'Chi sei?', 'Mostrami cosa sai fare', 'Dammi il cinque!']
-      catChat.features = ['web', 'reset']
+      catChat.features = ['record', 'web', 'file', 'reset']
       catChat.files = ['text/plain', 'application/pdf']
 
       function myCallback(message) {
