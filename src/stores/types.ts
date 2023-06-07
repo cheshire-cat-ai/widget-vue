@@ -14,7 +14,7 @@ export interface AsyncStateBase {
  * Defines a generic interface for defining the state of an asynchronous operation that returns data.
  */
 export interface AsyncState<TData> extends AsyncStateBase {
-  data?: TData
+  data: TData | null
 }
 
 /**

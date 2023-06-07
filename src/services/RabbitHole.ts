@@ -3,8 +3,7 @@
  * A service is a singleton object that provides a simple interface for performing backend-related tasks such as
  * sending or receiving data.
  */
-import { toJSON } from '@utils/commons'
-import { authFetch, getConfig } from '@/config'
+import { authFetch } from '@/config'
 
 /*
  * This service is used to send files down to the rabbit hole.
@@ -17,7 +16,7 @@ const RabbitHoleService = Object.freeze({
 
     const options = { method: 'POST', body: formData }
 
-    return await authFetch(getConfig().endpoints.rabbitHole, options).then<RabbitHoleFileResponse>(toJSON)
+    return (await authFetch('/rabbithole/', options).json<RabbitHoleFileResponse>()).data.value
   },
   sendWeb: async (url: string) => {
     const options = { 
@@ -28,7 +27,7 @@ const RabbitHoleService = Object.freeze({
       body: JSON.stringify({ url }) 
     }
 
-    return await authFetch(getConfig().endpoints.rabbitHole.concat('web/'), options).then<RabbitHoleWebResponse>(toJSON)
+    return (await authFetch('/rabbithole/web/', options).json<RabbitHoleWebResponse>()).data.value
   },
 })
 

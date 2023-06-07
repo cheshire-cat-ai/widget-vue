@@ -1,4 +1,4 @@
-import { authFetch, getConfig } from '@/config'
+import { authFetch } from '@/config'
 
 /*
  * This is a service that is used to manage the memory of the Cheshire Cat.
@@ -6,9 +6,9 @@ import { authFetch, getConfig } from '@/config'
 const MemoryService = Object.freeze({
   wipeConversation: async () => {
     try {
-      const result = await authFetch(getConfig().endpoints.wipeConversation, { method: 'DELETE' })
+      const { error } = await authFetch('/memory/working-memory/conversation-history/').delete()
 
-      if (result.status !== 200) throw new Error()
+      if (error) throw new Error()
 
       return {
         status: 'success',

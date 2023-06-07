@@ -42,7 +42,7 @@ const MessagesService = Object.freeze({
    * Initializes the WebSocket connection as well as the message and error handlers
    */
   connect(onConnected: OnConnected | null = null) {
-    socket = useWebSocket(getConfig().endpoints?.chat, {
+    socket = useWebSocket(`ws${getConfig().secure ? 's' : ''}://${getConfig().baseUrl}/ws`, {
       immediate: true,
       autoClose: false,
       autoReconnect: {

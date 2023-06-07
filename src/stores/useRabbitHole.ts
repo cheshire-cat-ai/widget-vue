@@ -7,7 +7,7 @@ import { uniqueId } from '@utils/commons'
 export const useRabbitHole = defineStore('rabbitHole', () => {
   const currentState = reactive<FileUploaderState>({
     loading: false,
-    data: undefined
+    data: null
   })
 
   const { showNotification } = useNotifications()

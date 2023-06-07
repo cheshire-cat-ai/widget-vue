@@ -32,17 +32,12 @@ const props = withDefaults(defineProps<{
 	callback: ''
 })
 
-const protocol = props.secure ? 's' : ''
-
 setConfig({
 	apiKey: props.api,
 	socketTimeout: props.timeout,
 	features: props.features,
-	endpoints: {
-		chat: `ws${protocol}://${props.url}/ws`,
-		rabbitHole: `http${protocol}://${props.url}/rabbithole/`,
-		wipeConversation: `http${protocol}://${props.url}/memory/working-memory/conversation-history/`
-	}
+	secure: props.secure,
+	baseUrl: props.url
 })
 
 const messagesStore = useMessages()
