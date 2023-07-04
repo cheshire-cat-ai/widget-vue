@@ -1,41 +1,65 @@
 import type { FileUploaderState } from '@stores/types'
 import { getErrorMessage } from '@utils/errors'
+import { apiClient, tryRequest } from '@/config'
 import { useNotifications } from '@stores/useNotifications'
-import RabbitHoleService from '@services/RabbitHole'
-import { uniqueId } from '@utils/commons'
 
 export const useRabbitHole = defineStore('rabbitHole', () => {
   const currentState = reactive<FileUploaderState>({
-    loading: false,
-    data: undefined
+    loading: false
   })
 
   const { showNotification } = useNotifications()
 
   const sendFile = (file: File) => {
     currentState.loading = true
-    RabbitHoleService.sendFile(file).then((data) => {
+    tryRequest(
+      apiClient.api.rabbitHole.uploadFile({ file }), 
+      `File ${file.name} successfully sent down the rabbit hole`, 
+      "Unable to send the file to the rabbit hole"
+    ).then(({ data }) => {
       currentState.loading = false
       currentState.data = data
-    }).then(() => showNotification({
-      id: uniqueId(),
-      text: `File ${file.name} successfully sent down the rabbit hole!`,
-      type: 'success'
-    })).catch((error) => {
+      showNotification({
+        text: `File ${file.name} successfully sent down the rabbit hole!`,
+        type: 'success'
+      })
+    }).catch(error => {
+      currentState.error = getErrorMessage(error)
+    })
+  }
+
+  const sendMemory = (file: File) => {
+    currentState.loading = true
+    tryRequest(
+      apiClient.api.rabbitHole.uploadMemory({ file }), 
+      "Memories file successfully sent down the rabbit hole", 
+      "Unable to send the memories to the rabbit hole"
+    ).then(({ data }) => {
+      currentState.loading = false
+      currentState.data = data
+      showNotification({
+        text: `Memories successfully sent down the rabbit hole!`,
+        type: 'success'
+      })
+    }).catch(error => {
       currentState.error = getErrorMessage(error)
     })
   }
 
   const sendWebsite = (url: string) => {
     currentState.loading = true
-    RabbitHoleService.sendWeb(url).then((data) => {
+    tryRequest(
+      apiClient.api.rabbitHole.uploadUrl({ url }), 
+      "Website successfully sent down the rabbit hole", 
+      "Unable to send the website to the rabbit hole"
+    ).then(({ data }) => {
       currentState.loading = false
       currentState.data = data
-    }).then(() => showNotification({
-      id: uniqueId(),
-      text: `Website successfully sent down the rabbit hole!`,
-      type: 'success'
-    })).catch((error) => {
+      showNotification({
+        text: `Website successfully sent down the rabbit hole!`,
+        type: 'success'
+      })
+    }).catch(error => {
       currentState.error = getErrorMessage(error)
     })
   }
@@ -43,6 +67,7 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
   return {
     currentState,
     sendFile,
-    sendWebsite
+    sendWebsite,
+    sendMemory
   }
 })

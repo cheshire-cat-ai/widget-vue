@@ -1,37 +1,49 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "components.d.ts", "auto-imports.d.ts", "globals.d.ts"],
+  "include": [
+    "env.d.ts", 
+    "src/**/*", 
+    "src/**/*.vue",
+    "components.d.ts",
+    "globals.d.ts",
+    "auto-imports.d.ts",
+  ],
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "ESNext",
     "module": "ESNext",
     "lib": [
-      "es2019",
+      "ESNext",
       "DOM"
+    ],
+    "types": [
+      "vite/client",
+      "node",
     ],
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": false,
     "noEmit": true,
     "allowJs": true,
+    "removeComments": true,
+    "importHelpers": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "strict": true,
     "allowSyntheticDefaultImports": true,
-    "composite": true,
+    "composite": false,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@components/*": ["src/components/*"],
       "@stores/*": ["src/stores/*"],
       "@models/*": ["src/models/*"],
-      "@services/*": ["src/services/*"],
       "@utils/*": ["src/utils/*"]
     }
   },
 
   "references": [
     {
-      "path": "./tsconfig.config.json"
+      "path": "./tsconfig.node.json"
     }
   ]
 }

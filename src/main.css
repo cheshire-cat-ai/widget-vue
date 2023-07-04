@@ -1,6 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap');
 
 @tailwind base;
+
+#w-root {
+  scrollbar-width: 10px;
+  scrollbar-color: hsl(var(--b1)) hsl(var(--n));
+}
+
+#w-root::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+#w-root::-webkit-scrollbar-thumb {
+  background: hsl(var(--n));
+  border-radius: 10px;
+}
+
 @tailwind components;
 @tailwind utilities;
 
@@ -11,46 +27,57 @@
 }
 
 @layer components {
+  .btn-outline {
+    @apply border-2;
+  }
+  .focus, .active {
+    @apply !bg-primary hover:bg-primary-focus focus:bg-primary-focus text-base-100;
+  }
+  .menu li > *:active {
+    @apply !bg-primary-focus
+  }
   .btn-ghost {
     @apply disabled:bg-transparent;
+  }
+  .btn-outline.btn-error:hover, .btn-outline.btn-success:hover,
+  .btn-outline.btn-info:hover, .btn-outline.btn-warning:hover,
+  .btn-error, .btn-info, .btn-success, .btn-warning {
+    @apply text-base-100;
   }
   .btn-error:hover:not(.btn-outline), .btn-error.btn-active:not(.btn-outline),
   .btn-info:hover:not(.btn-outline), .btn-info.btn-active:not(.btn-outline),
   .btn-success:hover:not(.btn-outline), .btn-success.btn-active:not(.btn-outline),
   .btn-warning:hover:not(.btn-outline), .btn-warning.btn-active:not(.btn-outline) {
-    @apply brightness-[0.85];
+    @apply brightness-[0.8];
   }
-  .input {
-    @apply outline outline-offset-2 outline-2 border-0 !ring-0 !transition-all;
+  .checkbox {
+    @apply border-2;
   }
-}
-
-#w-root {
-  scrollbar-color: #383938 #F4F4F5;
-}
-
-[data-theme="dark"] #w-root {
-  scrollbar-color: #F4F4F5 #383938;
-}
-
-#w-root::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-#w-root::-webkit-scrollbar-thumb {
-  background: #F4F4F5;
-  border-radius: 10px;
-}
-
-[data-theme="dark"] #w-root::-webkit-scrollbar-thumb {
-  background: #383938;
-}
-
-#w-root::-webkit-scrollbar-track {
-  background: #383938;
-}
-
-[data-theme="dark"] #w-root::-webkit-scrollbar-track {
-  background: #F4F4F5;
+  .select, .input, .textarea {
+    @apply overflow-hidden outline outline-offset-2 outline-2 border-0 !ring-0 !transition-all !duration-75 focus:outline-primary;
+  }
+  .toggle {
+    @apply !bg-none !border-2;
+  }
+  .plotly .modebar-btn.active {
+    @apply !bg-base-100;
+  }
+  .chat-bubble a {
+    @apply !link !link-info;
+  }
+  .chat-bubble table {
+    @apply !table !table-xs;
+  }
+  .chat-bubble table :where(thead, tfoot) {
+    @apply !text-base-100;
+  }
+  .chat-bubble pre {
+    @apply !my-4 !whitespace-pre-wrap;
+  }
+  .chat-bubble ul {
+    @apply !list-disc !list-inside;
+  }
+  .chat-bubble ol {
+    @apply !list-decimal !list-inside;
+  }
 }

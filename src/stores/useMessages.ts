@@ -1,9 +1,10 @@
 import type { MessagesState } from '@stores/types'
-import type { Message } from '@models/Message'
-import MessagesService from '@services/MessageService'
-import { now, uniqueId } from '@utils/commons'
-import { getErrorMessage } from '@utils/errors'
+import type { BotMessage, UserMessage } from '@models/Message'
+import { now, uniqueId } from 'lodash'
 import { useNotifications } from '@stores/useNotifications'
+import { apiClient } from '@/config'
+import { ErrorCode } from '@utils/errors'
+import type { PromptSettings } from 'ccat-api'
 
 export const useMessages = defineStore('messages', () => {
   const currentState = reactive<MessagesState>({
@@ -43,27 +44,27 @@ export const useMessages = defineStore('messages', () => {
      * and dispatches the received messages to the store.
      * It also dispatches the error to the store if an error occurs.
      */
-    MessagesService.connect(() => {
+    apiClient.onConnected(() => {
       currentState.ready = true
-    }).onMessage((message, type, why) => {
+    }).onMessage(({ content, type, why }) => {
       if (type === 'chat') {
         addMessage({
-          id: uniqueId(),
-          text: message,
+          text: content,
           sender: 'bot',
           timestamp: now(),
           why
         })
       } else if (type === 'notification') {
         showNotification({
-          id: uniqueId(),
           type: 'info',
-          text: message
+          text: content
         })
       }
-    }).onError((error: Error) => {
+    }).onError(error => {
       currentState.loading = currentState.ready = false
-      currentState.error = getErrorMessage(error)
+      currentState.error = Object.values(ErrorCode)[error]
+    }).onDisconnected(() => {
+      currentState.ready = false
     })
   })
 
@@ -71,14 +72,18 @@ export const useMessages = defineStore('messages', () => {
     /**
      * Unsubscribes to the messages service on component unmount
      */
-    MessagesService.disconnect()
+    apiClient.close()
   })
 
   /**
    * Adds a message to the list of messages
    */
-  const addMessage = (msg: Message) => {
+  const addMessage = (message: Omit<BotMessage, 'id'> | Omit<UserMessage, 'id'>) => {
     currentState.error = undefined
+    const msg = {
+      id: uniqueId('m_'),
+      ...message
+    }
     currentState.messages.push(msg)
     currentState.loading = msg.sender === 'user'
   }
@@ -93,16 +98,17 @@ export const useMessages = defineStore('messages', () => {
   }
 
   /**
-   * Sends a message to the messages service (with) and dispatches it to the store
+   * Sends a message to the messages service and dispatches it to the store
    */
-  const dispatchMessage = (message: string, callback = '') => {
-    if ((window as any)[callback]) MessagesService.send((window as any)[callback](message))
-    else {
+  const dispatchMessage = (message: string, callback = '', settings: Partial<PromptSettings>) => {
+    if ((window as any)[callback]) {
+      const msg = (window as any)[callback](message)
+      apiClient.send(msg, settings)
+    } else {
       if (callback) console.error("Callback function not found")
-      MessagesService.send(message)
+      apiClient.send(message, settings)
     }
     addMessage({
-      id: uniqueId(),
       text: message.trim(),
       timestamp: now(),
       sender: 'user'
