@@ -1,4 +1,4 @@
-import type { RabbitHoleResponse } from '@models/RabbitHole'
+import type { FileResponse, WebResponse } from 'ccat-api'
 import type { Message } from '@models/Message'
 import type { Notification } from '@models/Notification'
 
@@ -16,6 +16,8 @@ export interface AsyncStateBase {
 export interface AsyncState<TData> extends AsyncStateBase {
   data?: TData
 }
+
+export type RabbitHoleResponse = FileResponse | WebResponse | Record<string, unknown>
 
 /**
  * Defines the structure of the 'fileUploader' state.

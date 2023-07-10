@@ -2,7 +2,7 @@
 import { useRabbitHole } from '@stores/useRabbitHole'
 import { useMessages } from '@stores/useMessages'
 import { useMemory } from '@stores/useMemory'
-import { AcceptedContentTypes } from '@models/RabbitHole'
+import { AcceptedFileTypes, type AcceptedFileType, AcceptedMemoryTypes } from 'ccat-api'
 import { useNotifications } from '@stores/useNotifications'
 import ModalBox from '@components/ModalBox.vue'
 import { convertToHsl, generateDarkenColorFrom, generateForegroundColorFrom } from '@utils/colors'
@@ -27,9 +27,9 @@ const props = withDefaults(defineProps<{
 	defaults?: string[]
 	promptSettings?: string
 	features?: typeof Features[number][]
-	files?: typeof AcceptedContentTypes[number][]
+	files?: AcceptedFileType[]
 }>(), {
-	files: () => Object.values(AcceptedContentTypes),
+	files: () => Object.values(AcceptedFileTypes),
 	timeout: 10000,
 	secure: false,
 	dark: false,
@@ -274,7 +274,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 										<!-- :disabled="rabbitHoleState.loading" -->
 										<button disabled
 											class="join-item btn w-full flex-nowrap px-2" 
-											@click="openMemory({ multiple: false, accept: 'application/json' })">
+											@click="openMemory({ multiple: false, accept: AcceptedMemoryTypes.join(',') })">
 											<span class="grow normal-case">Upload memories</span>
 											<span class="rounded-lg bg-success p-1 text-base-100">
 												<ph-brain-fill class="h-6 w-6" />
@@ -294,7 +294,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 									<li v-if="features.includes('file')">
 										<button :disabled="rabbitHoleState.loading" 
 											class="join-item btn w-full flex-nowrap px-2" 
-											@click="openFile({ multiple: false, accept: AcceptedContentTypes.join(', ') })">
+											@click="openFile({ multiple: false, accept: AcceptedFileTypes.join(',') })">
 											<span class="grow normal-case">Upload file</span>
 											<span class="rounded-lg bg-warning p-1 text-base-100">
 												<heroicons-document-text-solid class="h-6 w-6" />
