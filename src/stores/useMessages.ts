@@ -99,9 +99,13 @@ export const useMessages = defineStore('messages', () => {
   /**
    * Sends a message to the messages service and dispatches it to the store
    */
-  const dispatchMessage = (message: string, callback = '', settings: Partial<PromptSettings>) => {
-    if ((window as any)[callback]) {
-      const msg = (window as any)[callback](message)
+  const dispatchMessage = async (
+    message: string, 
+    callback?: (message: string) => Promise<string>, 
+    settings?: Partial<PromptSettings>
+  ) => {
+    if (callback) {
+      const msg = await callback(message)
       apiClient.send(msg, settings)
     } else {
       if (callback) console.error("Callback function not found")

@@ -8,72 +8,52 @@ import ModalBox from '@components/ModalBox.vue'
 import { convertToHsl, generateDarkenColorFrom, generateForegroundColorFrom } from '@utils/colors'
 import type { Message } from '@models/Message'
 import type { Notification } from '@models/Notification'
-import { Features, updateClient } from '@/config'
-import CatClient from 'ccat-api'
+import { Features, type Feature, updateClient } from '@/config'
+import { CatClient, type PromptSettings, type CatSettings } from 'ccat-api'
 
-const props = withDefaults(defineProps<{
-	url: string
-	auth: string
-	callback?: string
-	dark?: boolean
-	port?: string
-	wsPath?: string
-	wsRetries?: number
-	wsDelay?: number
-	primary?: string
-	secure?: boolean
-	why?: boolean
-	timeout?: number
-	thinking?: string
-	placeholder?: string
-	defaults?: string[]
-	promptSettings?: string
-	features?: typeof Features[number][]
-	files?: AcceptedFileType[]
-}>(), {
-	files: () => Object.values(AcceptedFileTypes),
-	timeout: 10000,
-	secure: false,
-	dark: false,
-	port: '',
-	thinking: 'Cheshire Cat is thinking...',
-	placeholder: 'Ask the Cheshire Cat...',
-	why: false,
-	wsDelay: 2500,
-	wsPath: 'ws',
-	wsRetries: 3,
-	primary: '',
-	callback: '',
-	promptSettings: '{}',
-	defaults: () => [],
-	features: () => Object.values(Features),
+interface WidgetSettings {
+	settings: CatSettings & {
+		dark?: boolean
+		why?: boolean
+		thinking?: string
+		placeholder?: string
+		primary?: string
+		callback?: (message: string) => Promise<string>
+		prompt?: Partial<PromptSettings>
+		defaults?: string[]
+		features?: Feature[]
+		files?: AcceptedFileType[]
+	}
+}
+
+const props = withDefaults(defineProps<WidgetSettings>(), {
+	settings: () => ({
+		baseUrl: 'localhost',
+		dark: false,
+		why: false,
+		thinking: 'Cheshire Cat is thinking...',
+		placeholder: 'Ask the Cheshire Cat...',
+		primary: '',
+		defaults: [],
+		features: Object.values(Features),
+		files: Object.values(AcceptedFileTypes),
+	})
 })
 
-if (props.dark) import("highlight.js/styles/github.css")
+const { settings } = toReactive(props)
+
+if (settings.dark) import("highlight.js/styles/github.css")
 else import("highlight.js/styles/github-dark.css")
 
 const emit = defineEmits<{
 	(e: 'message', message: Message): void,
 	(e: 'upload', content: File | string): void,
-	(e: 'notification', notification: Notification): void,
-	(e: 'failed'): void
+	(e: 'notification', notification: Notification): void
 }>()
 
-updateClient(new CatClient({
-    baseUrl: props.url,
-    authKey: props.auth,
-    port: props.port,
-    secure: props.secure,
-    timeout: props.timeout,
-    ws: {
-        path: props.wsPath,
-        retries: props.wsRetries,
-        delay: props.wsDelay,
-        onFailed: () => emit('failed')
-    }
-}))
+updateClient(new CatClient(settings))
 
-const hasMenu = props.features.filter(v => v != 'record').length > 0
+const hasMenu = (settings.features ?? []).filter(v => v != 'record').length > 0
 
 const messagesStore = useMessages()
 const { dispatchMessage, selectRandomDefaultMessages } = messagesStore
@@ -108,7 +88,7 @@ const inputDisabled = computed(() => {
 	return messagesState.value.loading || !messagesState.value.ready || Boolean(messagesState.value.error)
 })
 
-const randomDefaultMessages = selectRandomDefaultMessages(props.defaults)
+const randomDefaultMessages = selectRandomDefaultMessages(settings.defaults)
 
 const dropContentZone = ref<HTMLDivElement>()
 
@@ -123,7 +103,7 @@ const contentHandler = (content: string | File[] | null) => {
 			new URL(content)
 			sendWebsite(content)
 		} catch (_) { 
-			dispatchMessage(content, props.callback, JSON.parse(props.promptSettings))
+			dispatchMessage(content, settings.callback, settings.prompt ?? {})
 		}
 	} else {
 		content.forEach(f => {
@@ -213,10 +193,10 @@ watchDeep(messagesState, () => {
  * When switching to the widget, the input box is focussed.
  */
 onMounted(() => {
-	if (props.primary && widgetRoot.value) {
-		widgetRoot.value.style.setProperty('--p', convertToHsl(props.primary)) // normal
-		widgetRoot.value.style.setProperty('--pf', generateDarkenColorFrom(props.primary)) // focus
-		widgetRoot.value.style.setProperty('--pc', generateForegroundColorFrom(props.primary)) // content
+	if (settings.primary && widgetRoot.value) {
+		widgetRoot.value.style.setProperty('--p', convertToHsl(settings.primary)) // normal
+		widgetRoot.value.style.setProperty('--pf', generateDarkenColorFrom(settings.primary)) // focus
+		widgetRoot.value.style.setProperty('--pc', generateForegroundColorFrom(settings.primary)) // content
 	}
 	textArea.value?.focus()
 })
@@ -242,7 +222,7 @@ const dispatchWebsite = () => {
 const sendMessage = (message: string) => {
 	if (message === '') return
 	userMessage.value = ''
-	dispatchMessage(message, props.callback, JSON.parse(props.promptSettings))
+	dispatchMessage(message, settings.callback, settings.prompt ?? {})
 }
 
 /**
@@ -259,7 +239,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 </script>
 
 <template>
-	<div ref="widgetRoot" :data-theme="dark ? 'dark' : 'light'"
+	<div ref="widgetRoot" :data-theme="settings.dark ? 'dark' : 'light'"
 		class="relative flex h-full min-h-full w-full flex-col scroll-smooth transition-colors @container selection:bg-primary">
 		<NotificationStack />
 		<div ref="dropContentZone"
@@ -297,7 +277,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 					:key="msg.id"
 					:sender="msg.sender"
 					:text="msg.text"
-					:why="why && msg.sender === 'bot' ? msg.why : ''" />
+					:why="settings.why && msg.sender === 'bot' ? msg.why : ''" />
 				<p v-if="messagesState.error" class="w-fit rounded-md bg-error p-4 font-semibold text-base-100">
 					{{ messagesState.error }}
 				</p>
@@ -305,7 +285,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 					<span class="text-lg">😺</span>
 					<p class="flex items-center gap-2">
 						<span class="loading loading-dots loading-xs" />
-						{{ thinking }}
+						{{ settings.thinking }}
 					</p>
 				</div>
 			</div>
@@ -321,7 +301,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 						<textarea ref="textArea" v-model.trim="userMessage" :disabled="inputDisabled"
 							class="textarea block max-h-20 w-full resize-none overflow-auto bg-base-200 !outline-offset-0" 
 							:class="[ hasMenu ? (isTwoLines ? 'pr-10' : 'pr-20') : 'pr-10' ]"
-							:placeholder="placeholder" @keydown="preventSend" />
+							:placeholder="settings.placeholder" @keydown="preventSend" />
 						<div :class="[ isTwoLines ? 'flex-col-reverse' : '' ]" class="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">
 							<button :disabled="inputDisabled || userMessage.length === 0"
 								class="btn-ghost btn-sm btn-circle btn self-center"
@@ -333,7 +313,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 									<heroicons-bolt-solid class="h-6 w-6" />
 								</button>
 								<ul tabindex="0" class="dropdown-content join-vertical join !-right-1/4 z-10 mb-5 p-0">
-									<li v-if="features.includes('memory')">
+									<li v-if="settings.features?.includes('memory')">
 										<!-- :disabled="rabbitHoleState.loading" -->
 										<button disabled
 											class="join-item btn w-full flex-nowrap px-2" 
@@ -344,7 +324,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 											</span>
 										</button>
 									</li>
-									<li v-if="features.includes('web')">
+									<li v-if="settings.features?.includes('web')">
 										<button :disabled="rabbitHoleState.loading" 
 											class="join-item btn w-full flex-nowrap px-2" 
 											@click="boxUploadURL?.toggleModal()">
@@ -354,7 +334,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 											</span>
 										</button>
 									</li>
-									<li v-if="features.includes('file')">
+									<li v-if="settings.features?.includes('file')">
 										<button :disabled="rabbitHoleState.loading" 
 											class="join-item btn w-full flex-nowrap px-2" 
 											@click="openFile({ multiple: false, accept: AcceptedFileTypes.join(',') })">
@@ -364,7 +344,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 											</span>
 										</button>
 									</li>
-									<li v-if="features.includes('reset')">
+									<li v-if="settings.features?.includes('reset')">
 										<button :disabled="messagesState.messages.length === 0" 
 											class="join-item btn w-full flex-nowrap px-2" 
 											@click="wipeConversation()">
@@ -378,7 +358,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 							</div>
 						</div>
 					</div>
-					<button v-if="isSupported && features.includes('record')" 
+					<button v-if="isSupported && settings.features?.includes('record')" 
 						class="btn-primary btn-circle btn" :class="[isListening ? 'btn-outline glass' : '']"
 						:disabled="inputDisabled" @click="toggleRecording()">
 						<heroicons-microphone-solid class="h-6 w-6" />

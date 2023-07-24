@@ -4,6 +4,7 @@ import { ApiError } from 'ccat-api'
 import type { CatClient, CancelablePromise } from 'ccat-api'
 
 export const Features = ['record', 'web', 'file', 'memory', 'reset'] as const
+export type Feature = typeof Features[number]
 
 /**
  * API client to make requests to the endpoints and passing the API_KEY for authentication.
