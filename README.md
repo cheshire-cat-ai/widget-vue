@@ -77,7 +77,7 @@ An example could be:
         },
         defaults: ['Is everything ok?', 'Who are you?', 'What time is it?', 'What\'s up?', 'Hello Cheshire Cat!'],
         features: ['record', 'web', 'file', 'reset'],
-        files: ['text/plain', 'application/pdf', 'application/pdf']
+        files: ['text/plain', 'application/pdf', 'text/markdown']
     }
 </script>
 ```
