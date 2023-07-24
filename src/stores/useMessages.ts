@@ -3,7 +3,6 @@ import type { BotMessage, UserMessage } from '@models/Message'
 import { now, uniqueId } from 'lodash'
 import { useNotifications } from '@stores/useNotifications'
 import { apiClient } from '@/config'
-import { ErrorCode } from '@utils/errors'
 import type { PromptSettings } from 'ccat-api'
 
 export const useMessages = defineStore('messages', () => {
@@ -62,7 +61,7 @@ export const useMessages = defineStore('messages', () => {
       }
     }).onError(error => {
       currentState.loading = currentState.ready = false
-      currentState.error = Object.values(ErrorCode)[error]
+      currentState.error = error.description
     }).onDisconnected(() => {
       currentState.ready = false
     })

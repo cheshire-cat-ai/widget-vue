@@ -22,7 +22,7 @@
 
 @layer base {
   html {
-    font-family: "Ubuntu", sans-serif;
+    font-family: "Ubuntu", system-ui, sans-serif;
   }
 }
 
@@ -30,11 +30,8 @@
   .btn-outline {
     @apply border-2;
   }
-  .focus, .active {
+  .focus {
     @apply !bg-primary hover:bg-primary-focus focus:bg-primary-focus text-base-100;
-  }
-  .menu li > *:active {
-    @apply !bg-primary-focus
   }
   .btn-ghost {
     @apply disabled:bg-transparent;
@@ -54,13 +51,10 @@
     @apply border-2;
   }
   .select, .input, .textarea {
-    @apply overflow-hidden outline outline-offset-2 outline-2 border-0 !ring-0 !transition-all !duration-75 focus:outline-primary;
+    @apply overflow-hidden outline outline-offset-2 bg-transparent outline-2 border-0 !ring-0 !transition-all !duration-75 focus:outline-primary;
   }
   .toggle {
     @apply !bg-none !border-2;
-  }
-  .plotly .modebar-btn.active {
-    @apply !bg-base-100;
   }
   .chat-bubble a {
     @apply !link !link-info;

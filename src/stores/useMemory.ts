@@ -8,7 +8,7 @@ export const useMemory = defineStore('memory', () => {
 
   const wipeConversation = async () => {
     const result = await tryRequest(
-      apiClient.api.memory.wipeConversationHistory(), 
+      apiClient.api?.memory.wipeConversationHistory(), 
       "The current conversation was wiped", 
       "Unable to wipe the in-memory current conversation"
     )

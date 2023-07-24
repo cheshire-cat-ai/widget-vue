@@ -13,7 +13,7 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
   const sendFile = (file: File) => {
     currentState.loading = true
     tryRequest(
-      apiClient.api.rabbitHole.uploadFile({ file }), 
+      apiClient.api?.rabbitHole.uploadFile({ file }), 
       `File ${file.name} successfully sent down the rabbit hole`, 
       "Unable to send the file to the rabbit hole"
     ).then(({ data }) => {
@@ -31,7 +31,7 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
   const sendMemory = (file: File) => {
     currentState.loading = true
     tryRequest(
-      apiClient.api.rabbitHole.uploadMemory({ file }), 
+      apiClient.api?.rabbitHole.uploadMemory({ file }), 
       "Memories file successfully sent down the rabbit hole", 
       "Unable to send the memories to the rabbit hole"
     ).then(({ data }) => {
@@ -49,7 +49,7 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
   const sendWebsite = (url: string) => {
     currentState.loading = true
     tryRequest(
-      apiClient.api.rabbitHole.uploadUrl({ url }), 
+      apiClient.api?.rabbitHole.uploadUrl({ url }), 
       "Website successfully sent down the rabbit hole", 
       "Unable to send the website to the rabbit hole"
     ).then(({ data }) => {

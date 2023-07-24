@@ -1,6 +1,5 @@
 import { AxiosError } from "axios"
 import type { JSONResponse } from "@models/JSONSchema"
-import { capitalize } from "lodash"
 import { ApiError } from 'ccat-api'
 import type { CatClient, CancelablePromise } from 'ccat-api'
 
@@ -21,15 +20,16 @@ export const updateClient = (client: CatClient) => {
  * @param request The axios promise function to await
  * @param success The message to return in case of success
  * @param error The message to return in case of error
- * @param log The log message/array of stuff to show
  * @returns A JSONResponse object containing status, message and optionally a data property
  */
 export const tryRequest = async <T>(
-    request: CancelablePromise<T>,
+    request: CancelablePromise<T> | undefined,
     success: string,
     error: string
 ) => {
     try {
+        if (request == undefined) throw new Error("Failed to reach the endpoint")
+
         const result = (await request) as T
 
         return {
@@ -38,13 +38,10 @@ export const tryRequest = async <T>(
             data: result
         } as JSONResponse<T>
     } catch (err) {
-        if (err instanceof AxiosError) {
-            error = capitalize(err.message)
-            if (err.code === "ERR_NETWORK") throw "Network error for"
-            else if (err.code !== "ECONNABORTED") throw "Failed to fetch"
-        }
-        if (err instanceof ApiError) {
-            throw "Failed to fetch"
+        if (err instanceof AxiosError && err.code === "ERR_NETWORK") {
+            error = "Network error while requesting"
+        } else if (err instanceof ApiError) {
+            error = "Unable to authenticate request"
         }
         return {
             status: 'error',
