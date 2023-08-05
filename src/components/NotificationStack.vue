@@ -5,7 +5,7 @@ const { getNotifications } = useNotifications()
 </script>
 
 <template>
-	<div class="toast-center toast toast-top z-50">
+	<div class="toast toast-center toast-top z-50">
 		<TransitionGroup name="notifications">
 			<div v-for="notification in getNotifications()" 
 				:key="notification.id" class="alert grid-cols-none py-2 font-medium text-base-100" :class="{

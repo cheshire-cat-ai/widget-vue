@@ -257,7 +257,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 						</span>
 						to send to the Cheshire Cat, meow!
 					</p>
-					<button class="btn-error btn-sm btn-circle btn absolute right-2 top-2" @click="isOverDropZone = false">
+					<button class="btn btn-circle btn-error btn-sm absolute right-2 top-2" @click="isOverDropZone = false">
 						<heroicons-x-mark-20-solid class="h-6 w-6" />
 					</button>
 				</div>
@@ -290,7 +290,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 				</div>
 			</div>
 			<div v-else class="flex grow cursor-pointer flex-col items-center justify-center gap-4 overflow-y-auto p-4">
-				<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn-neutral btn font-medium normal-case text-base-100 shadow-lg"
+				<div v-for="(msg, index) in randomDefaultMessages" :key="index" class="btn btn-neutral font-medium normal-case text-base-100 shadow-lg"
 					@click="sendMessage(msg)">
 					{{ msg }}
 				</div>
@@ -304,19 +304,19 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 							:placeholder="settings.placeholder" @keydown="preventSend" />
 						<div :class="[ isTwoLines ? 'flex-col-reverse' : '' ]" class="absolute right-2 top-1/2 flex -translate-y-1/2 gap-1">
 							<button :disabled="inputDisabled || userMessage.length === 0"
-								class="btn-ghost btn-sm btn-circle btn self-center"
+								class="btn btn-circle btn-ghost btn-sm self-center"
 								@click="sendMessage(userMessage)">
 								<heroicons-paper-airplane-solid class="h-6 w-6" />
 							</button>
-							<div v-if="hasMenu" class="dropdown-top dropdown-end dropdown self-center">
-								<button tabindex="0" :disabled="inputDisabled" class="btn-ghost btn-sm btn-circle btn">
+							<div v-if="hasMenu" class="dropdown dropdown-end dropdown-top self-center">
+								<button tabindex="0" :disabled="inputDisabled" class="btn btn-circle btn-ghost btn-sm">
 									<heroicons-bolt-solid class="h-6 w-6" />
 								</button>
-								<ul tabindex="0" class="dropdown-content join-vertical join !-right-1/4 z-10 mb-5 p-0">
+								<ul tabindex="0" class="dropdown-content join join-vertical !-right-1/4 z-10 mb-5 p-0">
 									<li v-if="settings.features?.includes('memory')">
 										<!-- :disabled="rabbitHoleState.loading" -->
 										<button disabled
-											class="join-item btn w-full flex-nowrap px-2" 
+											class="btn join-item w-full flex-nowrap px-2" 
 											@click="openMemory({ multiple: false, accept: AcceptedMemoryTypes.join(',') })">
 											<span class="grow normal-case">Upload memories</span>
 											<span class="rounded-lg bg-success p-1 text-base-100">
@@ -326,7 +326,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 									</li>
 									<li v-if="settings.features?.includes('web')">
 										<button :disabled="rabbitHoleState.loading" 
-											class="join-item btn w-full flex-nowrap px-2" 
+											class="btn join-item w-full flex-nowrap px-2" 
 											@click="boxUploadURL?.toggleModal()">
 											<span class="grow normal-case">Upload url</span>
 											<span class="rounded-lg bg-info p-1 text-base-100">
@@ -336,7 +336,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 									</li>
 									<li v-if="settings.features?.includes('file')">
 										<button :disabled="rabbitHoleState.loading" 
-											class="join-item btn w-full flex-nowrap px-2" 
+											class="btn join-item w-full flex-nowrap px-2" 
 											@click="openFile({ multiple: false, accept: AcceptedFileTypes.join(',') })">
 											<span class="grow normal-case">Upload file</span>
 											<span class="rounded-lg bg-warning p-1 text-base-100">
@@ -346,7 +346,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 									</li>
 									<li v-if="settings.features?.includes('reset')">
 										<button :disabled="messagesState.messages.length === 0" 
-											class="join-item btn w-full flex-nowrap px-2" 
+											class="btn join-item w-full flex-nowrap px-2" 
 											@click="wipeConversation()">
 											<span class="grow normal-case">Clear conversation</span>
 											<span class="rounded-lg bg-error p-1 text-base-100">
@@ -359,12 +359,12 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 						</div>
 					</div>
 					<button v-if="isSupported && settings.features?.includes('record')" 
-						class="btn-primary btn-circle btn" :class="[isListening ? 'btn-outline glass' : '']"
+						class="btn btn-circle btn-primary" :class="[isListening ? 'glass btn-outline' : '']"
 						:disabled="inputDisabled" @click="toggleRecording()">
 						<heroicons-microphone-solid class="h-6 w-6" />
 					</button>
 				</div>
-				<button v-if="isScrollable" class="btn-primary btn-outline btn-sm btn-circle btn absolute bottom-28 right-4 bg-base-100"
+				<button v-if="isScrollable" class="btn btn-circle btn-primary btn-outline btn-sm absolute bottom-28 right-4 bg-base-100"
 					@click="scrollToBottom">
 					<heroicons-arrow-down-20-solid class="h-5 w-5" />
 				</button>
@@ -376,8 +376,8 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 					</h3>
 					<p>Write down the URL you want the Cat to digest :</p>
 					<input v-model.trim="insertedURL" type="text" placeholder="Enter url..."
-						class="input-primary input input-sm w-full !transition-all">
-					<button class="btn-primary btn-sm btn" @click="dispatchWebsite">
+						class="input input-primary input-sm w-full !transition-all">
+					<button class="btn btn-primary btn-sm" @click="dispatchWebsite">
 						Send
 					</button>
 				</div>
