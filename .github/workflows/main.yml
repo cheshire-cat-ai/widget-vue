@@ -16,9 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
+        node-version: [16.x]
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
@@ -29,14 +27,14 @@ jobs:
     - run: npm ci
     - run: npm run lint
     - run: npm run build --if-present
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Build widget
+        commit_user_name: Builder Bot
     - name: Purge jsDelivr cache
-      # You may pin to the exact commit or the version.
-      # uses: gacts/purge-jsdelivr-cache@71fc7e172e0ef9559bfd251f43d75cf39cbeedba
       uses: gacts/purge-jsdelivr-cache@v1.0.2
       with:
-        # URLs for the cache purging (string|list)
         url: |
             https://cdn.jsdelivr.net/gh/cheshire-cat-ai/widget-vue@main/example/widget.js
             https://cdn.jsdelivr.net/gh/cheshire-cat-ai/widget-vue@main/example/widget.css
-        # Retry attempts (on the request failing)
         attempts: 3
