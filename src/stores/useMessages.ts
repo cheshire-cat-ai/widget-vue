@@ -100,17 +100,15 @@ export const useMessages = defineStore('messages', () => {
    * Sends a message to the messages service and dispatches it to the store
    */
   const dispatchMessage = async (
-    message: string, 
+    message: string,
+    userId: string,
     callback?: (message: string) => Promise<string>, 
     settings?: Partial<PromptSettings>
   ) => {
     if (callback) {
       const msg = await callback(message)
-      apiClient.send(msg, settings)
-    } else {
-      if (callback) console.error("Callback function not found")
-      apiClient.send(message, settings)
-    }
+      apiClient.send(msg, userId, settings)
+    } else apiClient.send(message, userId, settings)
     addMessage({
       text: message.trim(),
       timestamp: now(),

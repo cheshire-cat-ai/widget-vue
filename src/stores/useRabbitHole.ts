@@ -1,5 +1,4 @@
 import type { FileUploaderState } from '@stores/types'
-import { getErrorMessage } from '@utils/errors'
 import { apiClient, tryRequest } from '@/config'
 import { useNotifications } from '@stores/useNotifications'
 
@@ -8,23 +7,18 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
     loading: false
   })
 
-  const { showNotification } = useNotifications()
+  const { sendNotificationFromJSON } = useNotifications()
 
   const sendFile = (file: File) => {
     currentState.loading = true
     tryRequest(
       apiClient.api?.rabbitHole.uploadFile({ file }), 
-      `File ${file.name} successfully sent down the rabbit hole`, 
+      `File ${file.name} successfully sent down the rabbit hole!`, 
       "Unable to send the file to the rabbit hole"
-    ).then(({ data }) => {
+    ).then(res => {
       currentState.loading = false
-      currentState.data = data
-      showNotification({
-        text: `File ${file.name} successfully sent down the rabbit hole!`,
-        type: 'success'
-      })
-    }).catch(error => {
-      currentState.error = getErrorMessage(error)
+      currentState.data = res.data
+      sendNotificationFromJSON(res)
     })
   }
 
@@ -32,17 +26,12 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
     currentState.loading = true
     tryRequest(
       apiClient.api?.rabbitHole.uploadMemory({ file }), 
-      "Memories file successfully sent down the rabbit hole", 
+      "Memories file successfully sent down the rabbit hole!", 
       "Unable to send the memories to the rabbit hole"
-    ).then(({ data }) => {
+    ).then(res => {
       currentState.loading = false
-      currentState.data = data
-      showNotification({
-        text: `Memories successfully sent down the rabbit hole!`,
-        type: 'success'
-      })
-    }).catch(error => {
-      currentState.error = getErrorMessage(error)
+      currentState.data = res.data
+      sendNotificationFromJSON(res)
     })
   }
 
@@ -52,15 +41,10 @@ export const useRabbitHole = defineStore('rabbitHole', () => {
       apiClient.api?.rabbitHole.uploadUrl({ url }), 
       "Website successfully sent down the rabbit hole", 
       "Unable to send the website to the rabbit hole"
-    ).then(({ data }) => {
+    ).then(res => {
       currentState.loading = false
-      currentState.data = data
-      showNotification({
-        text: `Website successfully sent down the rabbit hole!`,
-        type: 'success'
-      })
-    }).catch(error => {
-      currentState.error = getErrorMessage(error)
+      currentState.data = res.data
+      sendNotificationFromJSON(res)
     })
   }
 

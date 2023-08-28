@@ -40,10 +40,10 @@ The available widget settings properties are:
 | why         | Boolean  | `false`       | `true` if the chat have to show the WHY button in the CCat response. `false` if not. |
 | thinking    | String   | `Cheshire Cat is thinking...` | The text to visualize while the CCat answer is loading. |
 | placeholder | String   | `Ask the Cheshire Cat...` | The text to visualize in the input placeholder. |
+| user        | String   | `user`        | The user ID to pass to the cat via WS. |
 | primary     | String   | `#F3977B`     | The color to use to stylize the chat. |
 | callback    | String   | `undefined`   | The function to call before passing the message to the cat. |
 | prompt      | PromptSettings | **Check** [PromptSettings](https://github.com/cheshire-cat-ai/api-client-ts/blob/main/api/utils.ts#L3) | The prompt settings to pass to the cat for each user message. |
-| files       | AcceptedFileType[] | **Check** [AcceptedFileTypes](https://github.com/cheshire-cat-ai/api-client-ts/blob/main/api/utils.ts#L60) | The accepted content types when uploading a file (must be supported by the cat). |
 | defaults    | String[] | **Check** [defaultMessages](https://github.com/cheshire-cat-ai/widget-vue/blob/main/src/stores/useMessages.ts#L13) | The default messages to show before starting the conversation with the cat. |
 | features    | Feature[] | **Check** [Features](https://github.com/cheshire-cat-ai/widget-vue/blob/main/src/config.ts#L6) | The features that the user can use. |
 
@@ -60,6 +60,7 @@ An example could be:
         authKey: 'meow',
         baseUrl: 'localhost',
         port: '1865',
+        user: "user",
         ws: {
             onFailed: (error) => {
                 console.log(error.description)

@@ -2,7 +2,7 @@
 import { useRabbitHole } from '@stores/useRabbitHole'
 import { useMessages } from '@stores/useMessages'
 import { useMemory } from '@stores/useMemory'
-import { AcceptedFileTypes, type AcceptedFileType, AcceptedMemoryTypes, type AcceptedMemoryType } from 'ccat-api'
+import { AcceptedMemoryTypes } from 'ccat-api'
 import { useNotifications } from '@stores/useNotifications'
 import ModalBox from '@components/ModalBox.vue'
 import { convertToHsl, generateDarkenColorFrom, generateForegroundColorFrom } from '@utils/colors'
@@ -16,13 +16,13 @@ interface WidgetSettings {
 		dark?: boolean
 		why?: boolean
 		thinking?: string
+		user?: string
 		placeholder?: string
 		primary?: string
 		callback?: (message: string) => Promise<string>
 		prompt?: Partial<PromptSettings>
 		defaults?: string[]
 		features?: Feature[]
-		files?: AcceptedFileType[]
 	}
 }
 
@@ -31,12 +31,12 @@ const props = withDefaults(defineProps<WidgetSettings>(), {
 		baseUrl: 'localhost',
 		dark: false,
 		why: false,
+		user: "user",
 		thinking: 'Cheshire Cat is thinking...',
 		placeholder: 'Ask the Cheshire Cat...',
 		primary: '',
 		defaults: [],
-		features: Object.values(Features),
-		files: Object.values(AcceptedFileTypes),
+		features: Object.values(Features)
 	})
 })
 
@@ -103,14 +103,9 @@ const contentHandler = (content: string | File[] | null) => {
 			new URL(content)
 			sendWebsite(content)
 		} catch (_) { 
-			dispatchMessage(content, settings.callback, settings.prompt ?? {})
+			dispatchMessage(content, settings.user ?? "user", settings.callback, settings.prompt ?? {})
 		}
-	} else {
-		content.forEach(f => {
-			if (AcceptedFileTypes.includes(f.type as AcceptedFileType)) sendFile(f)
-			else if (AcceptedMemoryTypes.includes(f.type as AcceptedMemoryType)) sendMemory(f)
-		})
-	}
+	} else content.forEach(f => sendFile(f))
 }
 
 /**
@@ -222,7 +217,7 @@ const dispatchWebsite = () => {
 const sendMessage = (message: string) => {
 	if (message === '') return
 	userMessage.value = ''
-	dispatchMessage(message, settings.callback, settings.prompt ?? {})
+	dispatchMessage(message, settings.user ?? "user", settings.callback, settings.prompt ?? {})
 }
 
 /**
@@ -314,8 +309,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 								</button>
 								<ul tabindex="0" class="dropdown-content join join-vertical !-right-1/4 z-10 mb-5 p-0">
 									<li v-if="settings.features?.includes('memory')">
-										<!-- :disabled="rabbitHoleState.loading" -->
-										<button disabled
+										<button :disabled="rabbitHoleState.loading"
 											class="btn join-item w-full flex-nowrap px-2" 
 											@click="openMemory({ multiple: false, accept: AcceptedMemoryTypes.join(',') })">
 											<span class="grow normal-case">Upload memories</span>
@@ -337,7 +331,7 @@ const scrollToBottom = () => chatRoot.value?.scrollTo({ behavior: 'smooth', left
 									<li v-if="settings.features?.includes('file')">
 										<button :disabled="rabbitHoleState.loading" 
 											class="btn join-item w-full flex-nowrap px-2" 
-											@click="openFile({ multiple: false, accept: AcceptedFileTypes.join(',') })">
+											@click="openFile({ multiple: false })">
 											<span class="grow normal-case">Upload file</span>
 											<span class="rounded-lg bg-warning p-1 text-base-100">
 												<heroicons-document-text-solid class="h-6 w-6" />
