@@ -61,8 +61,7 @@ watch(elementContent, () => {
 				</div>
 			</div>
 			<div v-if="why" class="divider divider-horizontal m-0 w-px before:bg-base-200 after:bg-base-200" />
-			<button v-if="why" class="btn btn-circle btn-primary btn-xs mx-2"
-				@click="whyPanel?.togglePanel()">
+			<button v-if="why" class="btn btn-circle btn-primary btn-xs mx-2" @click="whyPanel?.togglePanel()">
 				<p class="text-base">
 					?
 				</p>
@@ -73,9 +72,11 @@ watch(elementContent, () => {
 				<div class="overflow-x-auto rounded-md border-2 border-neutral">
 					<table class="table table-zebra table-sm text-center">
 						<thead class="bg-base-100 text-neutral">
-							<th>🧰 Tool</th>
-							<th>⌨️ Input</th>
-							<th>💬 Output</th>
+							<tr>
+								<th>🧰 Tool</th>
+								<th>⌨️ Input</th>
+								<th>💬 Output</th>
+							</tr>
 						</thead>
 						<tbody v-if="why.intermediate_steps?.length > 0">
 							<tr v-for="data in why.intermediate_steps" :key="data[0]">
